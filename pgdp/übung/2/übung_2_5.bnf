@@ -1,0 +1,5 @@
+klvw ::= (00 | +) lvw
+telefonnummer ::= (klvw | 0) ow nr
+
+name ::= (letter) | (letter name) | (letter special name)
+addresse ::= name @ name . name

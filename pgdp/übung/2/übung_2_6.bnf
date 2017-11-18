@@ -1,0 +1,7 @@
+l1 ::= a bbisz* a bbisz* a? bbisp a? bbisz* |
+	bbisz a? bbisz* a? bbisz* a bbisz* a |
+	a bbisz* a? bbisz* a? bbisz* a
+
+l2 ::= (bbisz (a | bbisz))* bbisz?
+
+l3 ::= ((cbisz* b a) | (cbisz* b cbisz+ a))* | bbisz*

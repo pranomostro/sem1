@@ -1,0 +1,19 @@
+:"Der benutzte Anfangswert"
+
+a::["a"]
+
+:"Funktion zur Berechnung des kartesischen Produktes"
+:"zweier Mengen, dabei wird jedwede Tupelstrukture erhalten"
+
+f::{,/x{y{(,x),,y}:/x}:\y}
+
+:"Konkatenierung der gegebenen Menge, jedes Elementes der"
+:"Menge als Tupel, und des kartesischen Produktes der Menge"
+:"mit sich selbst"
+
+g::{x,(,'x),f(x;x)}
+
+:"Entfernen der duplizierten Elemente in der zurückgegebenen"
+:"Menge von Tupeln"
+
+h::{g(x)@*'=g(x)}
