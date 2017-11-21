@@ -1,6 +1,6 @@
 class Mensch extends Aerger {
 	private static int[] startpoints={0, 10, 20, 30};
-	private static int[] endpoints={9, 19, 29, 39};
+	private static int[] endpoints={39, 9, 19, 29};
 	private static String[] colornames={"yellow", "blue", "red", "green"};
 	private static String selmsg1="player 1: yellow(1)/blue(2)/red(3)/green(4)";
 	private static String selmsg2="player 2 (other): yellow(1)/blue(2)/red(3)/green(4)";
@@ -39,12 +39,14 @@ class Mensch extends Aerger {
 		String onmove=msg + " (" + colornames[mover] + "): " + amount + " field(s), figure: ";
 
 		for(figure=readInt(onmove); !(figure>=1&&figure<=4)||!validmove(mover, figure-1, amount); figure=readInt(onmove))
-			;
+			write("Please use other figure\n");
 
 		figure--;
 
 		if(positions[mover][figure]==-1)
 			positions[mover][figure]=startpoints[mover]+amount;
+		else if(positions[mover][figure]<=endpoints[mover]&&positions[mover][figure]+amount>endpoints[mover])
+			positions[mover][figure]=40;
 		else {
 			positions[mover][figure]+=amount;
 			positions[mover][figure]%=40;
@@ -56,6 +58,9 @@ class Mensch extends Aerger {
 
 		newpos=positions[player][figure];
 
+		if(newpos==40)
+			return false;
+
 		if(positions[player][figure]==-1)
 			newpos=startpoints[player]+amount;
 		else {
@@ -64,7 +69,7 @@ class Mensch extends Aerger {
 		}
 
 		for(i=0; i<4; i++)
-			if(positions[player][i]==newpos&&i!=figure)
+			if(positions[player][i]==newpos&&i!=figure&&positions[player][i]<40)
 				return false;
 		return true;
 	}
