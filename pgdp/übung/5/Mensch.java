@@ -38,7 +38,7 @@ class Mensch extends Aerger {
 
 		String onmove=msg + " (" + colornames[mover] + "): " + amount + " field(s), figure: ";
 
-		for(figure=readInt(onmove); !(figure>=1&&figure<=4)||!validmove(mover, figure, amount); figure=readInt(onmove))
+		for(figure=readInt(onmove); !(figure>=1&&figure<=4)||!validmove(mover, figure-1, amount); figure=readInt(onmove))
 			;
 
 		figure--;
