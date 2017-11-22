@@ -1,9 +1,9 @@
 class Mensch extends Aerger {
 	private static int[] startpoints={0, 10, 20, 30};
 	private static int[] endpoints={39, 9, 19, 29};
-	private static String[] colornames={"yellow", "blue", "red", "green"};
-	private static String selmsg1="player 1: yellow(1)/blue(2)/red(3)/green(4)";
-	private static String selmsg2="player 2 (other): yellow(1)/blue(2)/red(3)/green(4)";
+	private static String[] colornames={"yellow", "blue", "green", "red"};
+	private static String selmsg1="player 1: yellow(1)/blue(2)/green(3)/red(4)";
+	private static String selmsg2="player 2 (other): yellow(1)/blue(2)/green(3)/red(4)";
 	private static int[][] positions={
 		{-1, -1, -1, -1},
 		{-1, -1, -1, -1},
@@ -12,9 +12,12 @@ class Mensch extends Aerger {
 	};
 
 	public static void main(String args[]) {
-		int p1, p2; /* always between 0<=p.<=3, except when printing */
+		int p1, p2; /* always between 0<=p<=3, except when printing */
 
-		Aerger.paintField(positions[0], positions[1], positions[2], positions[3]);
+		/* green is on position 3 on the board but, when passed to paintField, it */
+		/* is the 4th argument */
+
+		paint();
 
 		for(p1=readInt(selmsg1); !(p1>=1&&p1<=4); p1=readInt(selmsg1))
 			;
@@ -25,10 +28,20 @@ class Mensch extends Aerger {
 		p1--;
 		p2--;
 
-		while(true) {
-			Aerger.paintField(positions[0], positions[1], positions[2], positions[3]);
+		while(!gameover()) {
 			move(p1, p2, "player 1");
+			if(gameover())
+				break;
+			paint();
+			move(p2, p1, "player 2");
+			paint();
 		}
+		paint();
+		write("Game over");
+	}
+
+	private static void paint() {
+		Aerger.paintField(positions[0], positions[1], positions[3], positions[2]);
 	}
 
 	private static void move(int mover, int other, String msg) {
@@ -38,7 +51,9 @@ class Mensch extends Aerger {
 
 		String onmove=msg + " (" + colornames[mover] + "): " + amount + " field(s), figure: ";
 
-		for(figure=readInt(onmove); !(figure>=1&&figure<=4)||!validmove(mover, figure-1, amount); figure=readInt(onmove))
+		for(figure=readInt(onmove);
+			!(figure>=1&&figure<=4)||!validmove(mover, figure-1, amount);
+			figure=readInt(onmove))
 			write("Please use other figure\n");
 
 		figure--;
@@ -51,6 +66,17 @@ class Mensch extends Aerger {
 			positions[mover][figure]+=amount;
 			positions[mover][figure]%=40;
 		}
+		throwout(mover, figure);
+	}
+
+	private static void throwout(int player, int figure) {
+		int i, j;
+
+		for(i=0; i<4; i++)
+			for(j=0; j<4; j++)
+				if(i!=player&&positions[i][j]<=39&&positions[i][j]>=0&&
+					positions[i][j]==positions[player][figure])
+					positions[i][j]=-1;
 	}
 
 	private static boolean validmove(int player, int figure, int amount) {
@@ -68,9 +94,20 @@ class Mensch extends Aerger {
 			newpos%=40;
 		}
 
+
 		for(i=0; i<4; i++)
 			if(positions[player][i]==newpos&&i!=figure&&positions[player][i]<40)
 				return false;
 		return true;
+	}
+
+	private static boolean gameover() {
+		int i;
+
+		for(i=0; i<4; i++)
+			if(positions[i][0]==40&&positions[i][1]==40&&
+				positions[i][2]==40&&positions[i][3]==40)
+				return true;
+		return false;
 	}
 }
