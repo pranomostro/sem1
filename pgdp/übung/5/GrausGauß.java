@@ -1,5 +1,6 @@
 public class GrausGauß extends MiniJava {
 	private static int lines;
+	private static String inputmsg="Please enter the number of equations";
 
 	public static void main(String[] args) {
 		int i;
@@ -7,10 +8,7 @@ public class GrausGauß extends MiniJava {
 
 		matrix=readMatrix();
 
-		printMatrix(matrix);
-		writeConsole("\n");
-
-		results=rowEchelonToResult(matrix);
+		results=solveSystem(matrix);
 
 		for(i=0; i<results.length; i++)
 			writeConsole(results[i] + " ");
@@ -19,34 +17,38 @@ public class GrausGauß extends MiniJava {
 	}
 
 	private static int[] solveSystem(int[] matrix) {
-		int i;
+		int i, j, diag, belowdiag, gv;
 
-		for(i=0; i<lines; i++) {
+		for(i=0; i<lines-1; i++) {
 			searchSwap(matrix, i);
 
-			/* set element before diagonal in next line to 0 */
+			for(j=i+1; j<lines; j++) {
+				diag=get(matrix, i, i);
+				belowdiag=get(matrix, j, i);
+
+				gv=kgv(diag, belowdiag);
+
+				multLine(matrix, j, gv/belowdiag);
+				multAddLine(matrix, i, j, (-gv)/diag);
+			}
 		}
 
 		return rowEchelonToResult(matrix);
 	}
 
-	/* TODO: change before giving back */
-
 	private static int[] readMatrix() {
-		/*
 		int i;
 		int[] matrix;
-		lines=readInt("Please enter the number of equations");
+
+		for(lines=readInt(inputmsg); lines<=0; lines=readInt(inputmsg))
+			;
+
 		matrix=new int[lines*(lines+1)];
 
 		for(i=0; i<lines*(lines+1); i++)
 			matrix[i]=readInt();
 
 		return matrix;
-		*/
-
-		lines=3;
-		return (new int[] {6, 2, 3, 2, 4, 2, 2, 4, 3, 3, 1, 0});
 	}
 
 	private static void printMatrix(int[] matrix) {
@@ -80,7 +82,7 @@ public class GrausGauß extends MiniJava {
 		int i;
 
 		for(i=0; i<lines+1; i++)
-			set(matrix, line1, i, get(matrix, line1, i)+get(matrix, line2, i)*factor);
+			set(matrix, line2, i, get(matrix, line1, i)*factor+get(matrix, line2, i));
 	}
 
 	private static void swap(int[] matrix, int line1, int line2) {
