@@ -26,10 +26,12 @@ public class GrausGauß extends MiniJava {
 				diag=get(matrix, i, i);
 				belowdiag=get(matrix, j, i);
 
-				gv=kgv(diag, belowdiag);
+				if(belowdiag!=0) {
+					gv=kgv(diag, belowdiag);
 
-				multLine(matrix, j, gv/belowdiag);
-				multAddLine(matrix, i, j, (-gv)/diag);
+					multLine(matrix, j, gv/belowdiag);
+					multAddLine(matrix, i, j, (-gv)/diag);
+				}
 			}
 		}
 
