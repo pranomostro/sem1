@@ -127,7 +127,7 @@ public class Maze extends JPanel {
     }
     while (myMaze.pause) {
       try {
-        Thread.sleep(50);
+	Thread.sleep(20);
       } catch (InterruptedException ie) {
       }
     }
