@@ -1,10 +1,14 @@
 public class Pinguin extends Maze {
-	private static final int width=30;
-	private static final int height=30;
+	private static int width;
+	private static int height;
 	private static int[][] maze;
 
 	public static void main(String[] args) {
-		int x, y;
+		int x, y, maxdist;
+
+		width=MiniJava.readInt("Width: ");
+		height=MiniJava.readInt("Height: ");
+		maxdist=MiniJava.readInt("Maximal distance: ");
 
 		maze=generatePenguinMaze(width, height);
 
