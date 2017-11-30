@@ -1,29 +1,43 @@
 public class PonyNome {
 	public static void main(String[] args) {
-		double firstzero;
+		int fz=0;
+		double firstzero=0;
 		double[] nextzeros;
 		double[] interval;
 		double[] newcoeffs;
 
 		double[] coeff=new double[4];
-		coeff[0]=0.5;
-		coeff[1]=5;
-		coeff[2]=-33.5;
-		coeff[3]=-308;
 
 		coeff[0]=MiniJava.readDouble();
 		coeff[1]=MiniJava.readDouble();
 		coeff[2]=MiniJava.readDouble();
 		coeff[3]=MiniJava.readDouble();
 
-		interval=findIntervalRecursive(coeff, -2, 2, 10);
-		firstzero=findRootRecursive(coeff, (int)interval[0], (int)interval[1]);
+		if(coeff[0]==0&&coeff[1]==0&&coeff[2]==0&&coeff[3]==0) {
+			MiniJava.writeConsole("number of zeros: 0\n");
+			System.exit(0);
+		}
 
-		newcoeffs=hornerSchema(coeff, firstzero);
+		if(coeff[0]==0) {
+			newcoeffs=new double[3];
+			newcoeffs[0]=coeff[1];
+			newcoeffs[1]=coeff[2];
+			newcoeffs[2]=coeff[3];
+		} else {
+			interval=findIntervalRecursive(coeff, -2, 2, 10);
+			firstzero=findRootRecursive(coeff, (int)interval[0], (int)interval[1]);
+
+			newcoeffs=hornerSchema(coeff, firstzero);
+			fz=1;
+		}
+
 		nextzeros=quadraticFormula(newcoeffs);
 
-		MiniJava.writeConsole("number of zeros: " + (1+nextzeros.length) + "\n");
-		MiniJava.writeConsole(firstzero + "\n");
+		MiniJava.writeConsole("number of zeros: " + (fz+nextzeros.length) + "\n");
+
+		if(coeff[0]!=0)
+			MiniJava.writeConsole(firstzero + "\n");
+
 		for(int i=0; i<nextzeros.length; i++)
 			MiniJava.writeConsole(nextzeros[i] + "\n");
 	}

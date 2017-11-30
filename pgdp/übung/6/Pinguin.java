@@ -18,7 +18,7 @@ public class Pinguin extends Maze {
 		maze[x][y]=OLD_PATH_ACTIVE;
 		draw(maze);
 
-		MiniJava.writeConsole(walk(x, y+1, 50) + " penguins saved.\n");
+		MiniJava.writeConsole(walk(x, y+1, maxdist) + " penguins saved.\n");
 
 		maze[x][y]=PLAYER;
 
