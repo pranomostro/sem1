@@ -2,9 +2,14 @@ public class HilfPingu extends PenguinPen {
 	private final static int width=15;
 	private final static int height=10;
 	private static int px=1, py=0;
+	private static int count=0;
 	private static final int[][] penguinPen = generateStandardPenguinPen(width, height);
 	private static final boolean[][] done=new boolean[width][height];
-	private static final boolean[][] goingright=new boolean[width][height];
+	private static final int[][] wechsstate=new int[width][height];
+
+	private final static int NOVAL=-1;
+	private final static int GOINGRIGHT=0;
+	private final static int RHR=1;
 
 	private final static int[][] neigh={
 		{ -1, -1 },
@@ -14,7 +19,15 @@ public class HilfPingu extends PenguinPen {
 		{ 1, 1 },
 		{ 0, 1 },
 		{ -1, 1 },
+		{ -1, 0 }
+	};
+
+	private final static int[][] movedir={
 		{ -1, 0 },
+		{ 1, 0 },
+		{ 0, -1 },
+		{ 0, 1 },
+		{ 0, 0}
 	};
 
 	public static void move(int direction) {
@@ -28,7 +41,11 @@ public class HilfPingu extends PenguinPen {
 			return;
 		}
 
-		System.out.println(direction);
+		if(count==0)
+			for(int i=0; i<width; i++)
+				for(int j=0; j<height; j++)
+					if(penguinPen[i][j]==PENGUIN_OIO)
+						wechsstate[i][j]=0;
 
 		for(int i=0; i<neigh.length; i++)
 			if(isPeng(px+neigh[i][0], py+neigh[i][1]))
@@ -64,6 +81,15 @@ public class HilfPingu extends PenguinPen {
 					}
 					break;
 				case PENGUIN_OIO:
+					if(wechsstate[i][j]==GOINGRIGHT&&penguinPen[i+1][j]==FREE) {
+						penguinPen[i][j]=FREE;
+						penguinPen[i+1][j]=PENGUIN_OIO;
+						done[i+1][j]=true;
+						wechsstate[i][j]=NOVAL;
+						wechsstate[i+1][j]=GOINGRIGHT;
+					} else if(penguinPen[i+1][j]==WALL) {
+						wechsstate[i][j]=RHR;
+					}
 					break;
 				case PENGUIN_OII:
 					int nx, ny;
@@ -77,28 +103,17 @@ public class HilfPingu extends PenguinPen {
 					done[nx][ny]=true;
 					break;
 				case PENGUIN_IOO:
+					int idx=maxdistIndex(i, j);
+					penguinPen[i][j]=FREE;
+					penguinPen[i+movedir[idx][0]][j+movedir[idx][1]]=PENGUIN_IOO;
+					done[i+movedir[idx][0]][j+movedir[idx][1]]=true;
 					break;
+				}
 			}
 
-		switch(direction) {
-		case 0:
-			if(penguinPen[px-1][py]==FREE)
-				px--;
-			break;
-		case 1:
-			if(penguinPen[px+1][py]==FREE)
-				px++;
-			break;
-		case 2:
-			if(penguinPen[px][py-1]==FREE)
-				py--;
-			break;
-		case 3:
-			if(penguinPen[px][py+1]==FREE)
-				py++;
-			break;
-		default:
-			break;
+		if(penguinPen[px+movedir[direction][0]][py+movedir[direction][1]]==FREE) {
+			px+=movedir[direction][0];
+			py+=movedir[direction][1];
 		}
 
 		penguinPen[px][py]=ZOOKEEPER;
@@ -106,7 +121,26 @@ public class HilfPingu extends PenguinPen {
 		draw(penguinPen);
 	}
 
-	public static boolean isPeng(int x, int y) {
+	private static int maxdistIndex(int x, int y) {
+		int maxdist=0;
+		int maxindex=0;
+		for(int i=0; i<movedir.length-1; i++)
+			if(penguinPen[x+movedir[i][0]][y+movedir[i][1]]==FREE&&
+			  (Math.abs((x+movedir[i][0])-px)+Math.abs((y+movedir[i][1])-py))>maxdist&&
+			  (y+movedir[i][1]>0)) {
+				maxdist=Math.abs((x+movedir[i][0])-px)+Math.abs((y+movedir[i][1])-py);
+				maxindex=i;
+			}
+		if(Math.abs(x-px)+Math.abs(y-py)>maxdist)
+			maxindex=movedir.length-1;
+		return maxindex;
+	}
+
+	private static int rhr(int x, int y) {
+		return 0;
+	}
+
+	private static boolean isPeng(int x, int y) {
 		switch(penguinPen[x][y]) {
 			case PENGUIN_OOO: return true;
 			case PENGUIN_OOI: return true;
