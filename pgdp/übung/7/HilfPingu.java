@@ -9,7 +9,10 @@ public class HilfPingu extends PenguinPen {
 
 	private final static int NOVAL=-1;
 	private final static int GOINGRIGHT=0;
-	private final static int RHR=1;
+	private final static int RHR_UP=1;
+	private final static int RHR_RIGHT=2;
+	private final static int RHR_LEFT=3;
+	private final static int RHR_DOWN=4;
 
 	private final static int[][] neigh={
 		{ -1, -1 },
@@ -88,7 +91,8 @@ public class HilfPingu extends PenguinPen {
 						wechsstate[i][j]=NOVAL;
 						wechsstate[i+1][j]=GOINGRIGHT;
 					} else if(penguinPen[i+1][j]==WALL) {
-						wechsstate[i][j]=RHR;
+						wechsstate[i][j]=RHR_UP;
+						rhr(i, j);
 					}
 					break;
 				case PENGUIN_OII:
@@ -136,8 +140,28 @@ public class HilfPingu extends PenguinPen {
 		return maxindex;
 	}
 
-	private static int rhr(int x, int y) {
-		return 0;
+	private static void rhr(int i, int j) {
+		MiniJava.writeConsole("in rhr\n");
+		MiniJava.writeConsole("i: " + i + ", j: " + j + "\n");
+		MiniJava.writeConsole("penguinPen[i][j-1]: " + penguinPen[i][j-1] + ", penguinPen[i+1][j]: " + penguinPen[i+1][j] + ", penguinPen[i+1][j-1]: " + penguinPen[i+1][j-1] + "\n");
+
+		if(wechsstate[i][j]==RHR_UP&&penguinPen[i][j-1]==FREE&&penguinPen[i+1][j]==WALL) {
+			penguinPen[i][j]=FREE;
+			penguinPen[i][j-1]=PENGUIN_OIO;
+			if(penguinPen[i+1][j-1]==FREE) {
+				wechsstate[i][j-1]=RHR_RIGHT;
+				wechsstate[i][j]=NOVAL;
+			} else {
+				wechsstate[i][j-1]=RHR_UP;
+				wechsstate[i][j]=NOVAL;
+			}
+			done[i][j-1]=true;
+		}
+
+		MiniJava.writeConsole("in rhr\n");
+		MiniJava.writeConsole("i: " + i + ", j: " + j + "\n");
+		MiniJava.writeConsole("penguinPen[i][j-1]: " + penguinPen[i][j-1] + ", penguinPen[i+1][j]: " + penguinPen[i+1][j] + ", penguinPen[i+1][j-1]: " + penguinPen[i+1][j-1] + "\n");
+		MiniJava.writeConsole("---------------------------\n");
 	}
 
 	private static boolean isPeng(int x, int y) {
