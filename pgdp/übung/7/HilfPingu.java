@@ -3,7 +3,7 @@ public class HilfPingu extends PenguinPen {
 	private final static int height=10;
 	private static int px=1, py=0;
 	private static int count=0;
-	private static final int[][] penguinPen = generateStandardPenguinPen(width, height);
+	private static final int[][] penguinPen = generatePenguinPen(width, height);
 	private static final boolean[][] done=new boolean[width][height];
 	private static final int[][] wechsstate=new int[width][height];
 
@@ -30,7 +30,7 @@ public class HilfPingu extends PenguinPen {
 		{ 1, 0 },
 		{ 0, -1 },
 		{ 0, 1 },
-		{ 0, 0}
+		{ 0, 0 }
 	};
 
 	public static void move(int direction) {
