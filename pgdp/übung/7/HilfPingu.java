@@ -41,8 +41,10 @@ public class HilfPingu extends PenguinPen {
 						wechsstate[i][j]=0;
 
 		for(int i=0; i<neigh.length; i++)
-			if(py+neigh[i][1]>=0&&isPeng(px+neigh[i][0], py+neigh[i][1]))
+			if(py+neigh[i][1]>=0&&isPeng(px+neigh[i][0], py+neigh[i][1])) {
+				MiniJava.writeConsole("(" + (px+neigh[i][0]) + ", " + (py+neigh[i][1]) + ") wird frei -- Pinguin ist satt.\n");
 				penguinPen[px+neigh[i][0]][py+neigh[i][1]]=FREE;
+			}
 
 		penguinPen[px][py]=FREE;
 
@@ -68,18 +70,17 @@ public class HilfPingu extends PenguinPen {
 						ystep=0;
 					}
 					if(penguinPen[i+xstep][j+ystep]==FREE&&j+ystep>=0) { /* no zufullin suicide, please */
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j+ystep) + ", " + (i+xstep) + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i+xstep][j+ystep]=PENGUIN_OOI;
 						done[i+xstep][j+ystep]=true;
 					}
 					break;
 				case PENGUIN_OIO:
-					MiniJava.writeConsole("the current penguin direction: " + wechsstate[i][j]+"\n");
 					if(penguinPen[i+1][j]==WALL&&wechsstate[i][j]==GOINGRIGHT)
 						wechsstate[i][j]=RHR_UP;
-					MiniJava.writeConsole("after possibly updating the direction: " + wechsstate[i][j] + "\n");
 					if(wechsstate[i][j]==GOINGRIGHT&&penguinPen[i+1][j]==FREE) {
-						MiniJava.writeConsole("going to the right, in free space\n");
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + j + ", " + (i+1) + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i+1][j]=PENGUIN_OIO;
 						done[i+1][j]=true;
@@ -96,12 +97,14 @@ public class HilfPingu extends PenguinPen {
 						nx=(int)(width*Math.random());
 						ny=(int)(height*Math.random());
 					}
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + ny + ", " + nx + ") -- Pinguin flüchtet\n");
 					penguinPen[nx][ny]=PENGUIN_OII;
 					penguinPen[i][j]=FREE;
 					done[nx][ny]=true;
 					break;
 				case PENGUIN_IOO:
 					int idx=maxdistIndex(i, j);
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j+movedir[idx][1]) + ", " + (i+movedir[idx][0]) + ") -- Pinguin flüchtet\n");
 					penguinPen[i][j]=FREE;
 					penguinPen[i+movedir[idx][0]][j+movedir[idx][1]]=PENGUIN_IOO;
 					done[i+movedir[idx][0]][j+movedir[idx][1]]=true;
@@ -113,6 +116,7 @@ public class HilfPingu extends PenguinPen {
 			return;
 
 		if(penguinPen[px+movedir[direction][0]][py+movedir[direction][1]]==FREE) {
+			MiniJava.writeConsole("(" + py + ", " + px + ") ==> (" + (py+movedir[direction][1]) + ", " + (px+movedir[direction][0]) + ") -- Spielschritt.\n");
 			px+=movedir[direction][0];
 			py+=movedir[direction][1];
 		}
@@ -139,10 +143,7 @@ public class HilfPingu extends PenguinPen {
 	}
 
 	private static void rhr(int i, int j) {
-		MiniJava.writeConsole("rhr called\n");
-
 		if(j==0&&wechsstate[i][j]==RHR_UP) {
-			MiniJava.writeConsole("turning around in the face of death\n");
 			wechsstate[i][j]=RHR_DOWN;
 			rhr(i, j);
 		}
@@ -151,13 +152,6 @@ public class HilfPingu extends PenguinPen {
 			wechsstate[i][j]==RHR_RIGHT&&penguinPen[i][j+1]==WALL||
 			wechsstate[i][j]==RHR_DOWN&&penguinPen[i-1][j]==WALL||
 			wechsstate[i][j]==RHR_LEFT&&penguinPen[i][j-1]==WALL) {
-			switch(wechsstate[i][j]) {
-				case RHR_UP: MiniJava.writeConsole("up\n"); break;
-				case RHR_RIGHT: MiniJava.writeConsole("right\n"); break;
-				case RHR_LEFT: MiniJava.writeConsole("left\n"); break;
-				case RHR_DOWN: MiniJava.writeConsole("down\n"); break;
-				default: MiniJava.writeConsole("noo. no.\n"); break;
-			}
 			if(wechsstate[i][j]==RHR_UP&&penguinPen[i][j-1]==WALL) {
 				wechsstate[i][j]=RHR_LEFT;
 				rhr(i, j);
@@ -174,7 +168,7 @@ public class HilfPingu extends PenguinPen {
 				switch(wechsstate[i][j]) {
 				case RHR_UP:
 					if(penguinPen[i][j-1]==FREE) {
-						MiniJava.writeConsole("moving up\n");
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j-1) + ", " + i + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i][j-1]=PENGUIN_OIO;
 						wechsstate[i][j]=NOVAL;
@@ -185,7 +179,7 @@ public class HilfPingu extends PenguinPen {
 					break;
 				case RHR_RIGHT:
 					if(penguinPen[i+1][j]==FREE) {
-						MiniJava.writeConsole("moving right\n");
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + j + ", " + (i+1) + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i+1][j]=PENGUIN_OIO;
 						wechsstate[i][j]=NOVAL;
@@ -196,7 +190,7 @@ public class HilfPingu extends PenguinPen {
 					break;
 				case RHR_DOWN:
 					if(penguinPen[i][j+1]==FREE) {
-						MiniJava.writeConsole("moving down\n");
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j+1) + ", " + i + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i][j+1]=PENGUIN_OIO;
 						wechsstate[i][j]=NOVAL;
@@ -207,7 +201,7 @@ public class HilfPingu extends PenguinPen {
 					break;
 				case RHR_LEFT:
 					if(penguinPen[i-1][j]==FREE) {
-						MiniJava.writeConsole("moving left\n");
+						MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + j + ", " + (i-1) + ") -- Pinguin flüchtet\n");
 						penguinPen[i][j]=FREE;
 						penguinPen[i-1][j]=PENGUIN_OIO;
 						wechsstate[i][j]=NOVAL;
@@ -222,7 +216,7 @@ public class HilfPingu extends PenguinPen {
 			switch(wechsstate[i][j]) {
 			case RHR_LEFT:
 				if(penguinPen[i][j-1]==FREE) {
-					MiniJava.writeConsole("walking up, from left\n");
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j-1) + ", " + i + ") -- Pinguin flüchtet\n");
 					penguinPen[i][j]=FREE;
 					penguinPen[i][j-1]=PENGUIN_OIO;
 					wechsstate[i][j]=NOVAL;
@@ -233,7 +227,7 @@ public class HilfPingu extends PenguinPen {
 				break;
 			case RHR_UP:
 				if(penguinPen[i+1][j]==FREE) {
-					MiniJava.writeConsole("walking right, from up\n");
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + j + ", " + (i+1) + ") -- Pinguin flüchtet\n");
 					penguinPen[i][j]=FREE;
 					penguinPen[i+1][j]=PENGUIN_OIO;
 					wechsstate[i][j]=NOVAL;
@@ -244,7 +238,7 @@ public class HilfPingu extends PenguinPen {
 				break;
 			case RHR_RIGHT:
 				if(penguinPen[i][j+1]==FREE) {
-					MiniJava.writeConsole("walking down, from right\n");
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + (j+1) + ", " + i + ") -- Pinguin flüchtet\n");
 					penguinPen[i][j]=FREE;
 					penguinPen[i][j+1]=PENGUIN_OIO;
 					wechsstate[i][j]=NOVAL;
@@ -255,7 +249,7 @@ public class HilfPingu extends PenguinPen {
 				break;
 			case RHR_DOWN:
 				if(penguinPen[i-1][j]==FREE) {
-					MiniJava.writeConsole("walking left, from down\n");
+					MiniJava.writeConsole("(" + j + ", " + i + ") ==> (" + j + ", " + (i-1) + ") -- Pinguin flüchtet\n");
 					penguinPen[i][j]=FREE;
 					penguinPen[i-1][j]=PENGUIN_OIO;
 					wechsstate[i][j]=NOVAL;

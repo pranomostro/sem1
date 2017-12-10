@@ -21,6 +21,7 @@ public class Interpreter extends MiniJava  {
 	public static final int HALT=16;
 	public static final int ALLOC=17;
 
+	private static int sp;
 	private static int[] stack;
 
 	static void error(String message) {
@@ -51,10 +52,6 @@ public class Interpreter extends MiniJava  {
 		ArrayList<Integer> il=new ArrayList<>();
 		String[] lines=textProgram.split("\n");
 
-		for(String s: lines) {
-			MiniJava.writeConsole(s + "\n");
-		}
-
 		/* replace label with instruction number in every line */
 		for(i=0; i<lines.length; i++) {
 			if(lines[i].matches("[A-Za-z]+:")) {
@@ -64,12 +61,6 @@ public class Interpreter extends MiniJava  {
 						lines[j]=lines[j].replace(labelname, "" + i);
 				lines[i]="NOP";
 			}
-		}
-
-		MiniJava.writeConsole("-----------------\n");
-
-		for(String s: lines) {
-			MiniJava.writeConsole(s + "\n");
 		}
 
 		i=0;
@@ -93,46 +84,63 @@ public class Interpreter extends MiniJava  {
 				il.add(4<<16);
 				break;
 			case "LDI":
-				il.add(5<<16);
 				if(words.length!=2)
-					error("LDI needs an argument");
-				il.add(il.get(i)&Integer.parseInt(words[1]));
+					error("LDI needs one argument\n");
+				il.add(5<<16|Integer.parseInt(words[1]));
 				break;
 			case "LDS":
-				il.add(6<<16);
+				if(words.length!=2)
+					error("LDS needs one argument\n");
+				il.add(6<<16|Integer.parseInt(words[1]));
 				break;
 			case "STS":
-				il.add(7<<16);
+				if(words.length!=2)
+					error("STS needs one argument\n");
+				il.add(7<<16|Integer.parseInt(words[1]));
 				break;
 			case "JUMP":
-				il.add(8<<16);
+				if(words.length!=2)
+					error("JUMP needs one argument\n");
+				il.add(8<<16|Integer.parseInt(words[1]));
 				break;
 			case "JE":
-				il.add(9<<16);
+				if(words.length!=2)
+					error("JE needs one argument\n");
+				il.add(9<<16|Integer.parseInt(words[1]));
 				break;
 			case "JNE":
-				il.add(10<<16);
+				if(words.length!=2)
+					error("JNE needs one argument\n");
+				il.add(10<<16|Integer.parseInt(words[1]));
 				break;
 			case "JLT":
-				il.add(11<<16);
+				if(words.length!=2)
+					error("JLT needs one argument\n");
+				il.add(11<<16|Integer.parseInt(words[1]));
 				break;
 			case "IN":
-			il.add(12<<16);
-			break;
+				il.add(12<<16);
+				break;
 			case "OUT":
 				il.add(13<<16);
 				break;
 			case "CALL":
-				il.add(14<<16);
+				if(words.length!=2)
+					error("CALL needs one argument\n");
+				il.add(14<<16|Integer.parseInt(words[1]));
 				break;
 			case "RETURN":
-				il.add(15<<16);
+				if(words.length!=2)
+					error("RETURN needs one argument\n");
+				il.add(15<<16|Integer.parseInt(words[1]));
 				break;
 			case "HALT":
 				il.add(16<<16);
 				break;
 			case "ALLOC":
-				il.add(17<<16);
+				if(words.length!=2)
+					error("ALLOC needs one argument\n");
+				il.add(17<<16|Integer.parseInt(words[1]));
 				break;
 			default:
 				break;
@@ -140,14 +148,36 @@ public class Interpreter extends MiniJava  {
 			i++;
 		}
 
-		for(i=0; i<il.length(); i++)
-			MiniJava.writeConsole("n
-
 		return il.stream().mapToInt(Integer::intValue).toArray();
 	}
 
+	private static int pop() {
+		if(sp==0)
+			error("Not pop()'ing from an empty stack\n");
+		sp--;
+		return stack[sp];
+	}
+
+	private static void push(int val) {
+		if(sp>127)
+			error("Not push()'ing on a full stack\n");
+		stack[sp]=val;
+		sp++;
+	}
+
+	private static int execute(int[] program) {
+		for(int i=0; i<program.length; i++)
+			switch(program[i]>>16) {
+			case NOP:
+				break;
+			case ADD:
+				push(pop()+pop());
+			}
+	}
+
 	public static void main(String[] args) {
+		sp=0;
 		stack=new int[128];
-		parse("IN\nLDI fak\nCALL 1\nOUT\nHALT\nfak:\nALLOC 1\n");
+		parse("ALLOC 1\nLDI 0\nSTS 1\nfrom:\nLDS 1\nOUT\nLDS 1\nLDI 1\nADD\nSTS 1\nJUMP from\n");
 	}
 }
