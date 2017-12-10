@@ -21,6 +21,7 @@ public class Interpreter extends MiniJava  {
 	public static final int HALT=16;
 	public static final int ALLOC=17;
 
+	private static int ic;
 	private static int sp;
 	private static int[] stack;
 
@@ -166,18 +167,88 @@ public class Interpreter extends MiniJava  {
 	}
 
 	private static int execute(int[] program) {
-		for(int i=0; i<program.length; i++)
-			switch(program[i]>>16) {
+		int o1, o2;
+		for(int ic=0; ic<program.length; ic++)
+			switch(program[ic]>>16) {
 			case NOP:
 				break;
 			case ADD:
 				push(pop()+pop());
+				break;
+			case SUB:
+				push(pop()-pop());
+				break;
+			case MUL:
+				push(pop()*pop());
+				break;
+			case LDI:
+				push(program[ic]|0xFFFF);
+				break;
+			case LDS:
+				// TODO
+				break;
+			case STS:
+				// TODO
+				break;
+			case JUMP:
+				ic=(program[ic]|0xFFFF)-1;
+				break;
+			case JE:
+				o1=pop();
+				o2=pop();
+				push(o2);
+				push(o1);
+				if(o1==o2)
+					ic=(program[ic]|0xFFFF)-1;
+				break;
+			case JNE:
+				o1=pop();
+				o2=pop();
+				push(o2);
+				push(o1);
+				if(o1!=o2)
+					ic=(program[ic]|0xFFFF)-1;
+				break;
+			case JLT:
+				o1=pop();
+				o2=pop();
+				push(o2);
+				push(o1);
+				if(o1<o2)
+					ic=(program[ic]|0xFFFF)-1;
+				break;
+			case IN:
+				push(MiniJava.readInt());
+				break;
+			case OUT:
+				int out=pop();
+				push(out);
+				MiniJava.writeConsole(out + "\n");
+				break;
+			case CALL:
+				// TODO
+				break;
+			case RETURN:
+				// TODO
+				break;
+			case HALT:
+				System.exit(0);
+				break;
+			case ALLOC:
+				// TODO
+				break;
+			default:
+				error("Unknown opcode " + (program[ic]<<16) + "\n");
 			}
+		int res=pop();
+		push(res);
+		return res;
 	}
 
 	public static void main(String[] args) {
 		sp=0;
 		stack=new int[128];
-		parse("ALLOC 1\nLDI 0\nSTS 1\nfrom:\nLDS 1\nOUT\nLDS 1\nLDI 1\nADD\nSTS 1\nJUMP from\n");
+		//parse("ALLOC 1\nLDI 0\nSTS 1\nfrom:\nLDS 1\nOUT\nLDS 1\nLDI 1\nADD\nSTS 1\nJUMP from\n");
+		execute(parse("IN\nIN\nSUB\nOUT\n"));
 	}
 }
