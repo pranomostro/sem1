@@ -24,6 +24,7 @@ public class Interpreter extends MiniJava  {
 	private static int ic;
 	private static int sp, fp;
 	private static int[] stack;
+	private static String[] lines;
 
 	static void error(String message) {
 		throw new RuntimeException(message);
@@ -49,9 +50,10 @@ public class Interpreter extends MiniJava  {
 	}
 
 	public static int[] parse(String textProgram) {
+		short immediate;
 		int i=0;
 		ArrayList<Integer> il=new ArrayList<>();
-		String[] lines=textProgram.split("\n");
+		lines=textProgram.split("\n");
 
 		/* replace label with instruction number in every line */
 		for(i=0; i<lines.length; i++) {
@@ -70,7 +72,7 @@ public class Interpreter extends MiniJava  {
 			String[] words=s.split(" ");
 			switch(words[0]) {
 			case "NOP":
-				il.add(0<<16);
+				il.add(0);
 				break;
 			case "ADD":
 				il.add(1<<16);
@@ -88,7 +90,8 @@ public class Interpreter extends MiniJava  {
 				if(words.length!=2)
 					error("LDI needs one argument\n");
 				try {
-					il.add(5<<16|Integer.parseInt(words[1]));
+					immediate=Short.parseShort(words[1]);
+					il.add(5<<16|immediate&0xFFFF);
 				} catch(Exception e) {
 					error("Failed to parse argument for LDI\n");
 				}
@@ -97,7 +100,8 @@ public class Interpreter extends MiniJava  {
 				if(words.length!=2)
 					error("LDS needs one argument\n");
 				try {
-					il.add(6<<16|Integer.parseInt(words[1]));
+					immediate=Short.parseShort(words[1]);
+					il.add(6<<16|immediate&0xFFFF);
 				} catch(Exception e) {
 					error("Failed to parse argument for LDS\n");
 				}
@@ -106,7 +110,8 @@ public class Interpreter extends MiniJava  {
 				if(words.length!=2)
 					error("STS needs one argument\n");
 				try {
-					il.add(7<<16|Integer.parseInt(words[1]));
+					immediate=Short.parseShort(words[1]);
+					il.add(7<<16|immediate&0xFFFF);
 				} catch(Exception e) {
 					error("Failed to parse argument for STS\n");
 				}
@@ -184,6 +189,7 @@ public class Interpreter extends MiniJava  {
 				}
 				break;
 			default:
+				error("Unknown instruction\n");
 				break;
 			}
 			i++;
@@ -222,6 +228,11 @@ public class Interpreter extends MiniJava  {
 				break;
 			case MUL:
 				push(pop()*pop());
+				break;
+			case MOD:
+				o1=pop();
+				o2=pop();
+				push(o1%o2);
 				break;
 			case LDI:
 				val=program[ic]&0xFFFF;
@@ -293,7 +304,7 @@ public class Interpreter extends MiniJava  {
 				sp++;
 				break;
 			default:
-				error("Unknown opcode " + (program[ic]<<16) + "\n");
+				error("Unknown opcode " + (program[ic]>>16) + "\n");
 			}
 		}
 		int res=pop();
