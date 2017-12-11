@@ -22,7 +22,7 @@ public class Interpreter extends MiniJava  {
 	public static final int ALLOC=17;
 
 	private static int ic;
-	private static int sp;
+	private static int sp, fp;
 	private static int[] stack;
 
 	static void error(String message) {
@@ -87,37 +87,65 @@ public class Interpreter extends MiniJava  {
 			case "LDI":
 				if(words.length!=2)
 					error("LDI needs one argument\n");
-				il.add(5<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(5<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for LDI\n");
+				}
 				break;
 			case "LDS":
 				if(words.length!=2)
 					error("LDS needs one argument\n");
-				il.add(6<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(6<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for LDS\n");
+				}
 				break;
 			case "STS":
 				if(words.length!=2)
 					error("STS needs one argument\n");
-				il.add(7<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(7<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for STS\n");
+				}
 				break;
 			case "JUMP":
 				if(words.length!=2)
 					error("JUMP needs one argument\n");
-				il.add(8<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(8<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for JUMP\n");
+				}
 				break;
 			case "JE":
 				if(words.length!=2)
 					error("JE needs one argument\n");
-				il.add(9<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(9<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for JE\n");
+				}
 				break;
 			case "JNE":
 				if(words.length!=2)
 					error("JNE needs one argument\n");
-				il.add(10<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(10<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for JNE\n");
+				}
 				break;
 			case "JLT":
 				if(words.length!=2)
 					error("JLT needs one argument\n");
-				il.add(11<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(11<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for JLT\n");
+				}
 				break;
 			case "IN":
 				il.add(12<<16);
@@ -128,12 +156,20 @@ public class Interpreter extends MiniJava  {
 			case "CALL":
 				if(words.length!=2)
 					error("CALL needs one argument\n");
-				il.add(14<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(14<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for CALL\n");
+				}
 				break;
 			case "RETURN":
 				if(words.length!=2)
 					error("RETURN needs one argument\n");
-				il.add(15<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(15<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for RETURN\n");
+				}
 				break;
 			case "HALT":
 				il.add(16<<16);
@@ -141,7 +177,11 @@ public class Interpreter extends MiniJava  {
 			case "ALLOC":
 				if(words.length!=2)
 					error("ALLOC needs one argument\n");
-				il.add(17<<16|Integer.parseInt(words[1]));
+				try {
+					il.add(17<<16|Integer.parseInt(words[1]));
+				} catch(Exception e) {
+					error("Failed to parse argument for ALLOC\n");
+				}
 				break;
 			default:
 				break;
@@ -166,9 +206,11 @@ public class Interpreter extends MiniJava  {
 		sp++;
 	}
 
-	private static int execute(int[] program) {
-		int o1, o2;
-		for(int ic=0; ic<program.length; ic++)
+	public static int execute(int[] program) {
+		int o1, o2, narg, val;
+		for(int ic=0; ic<program.length; ic++) {
+			if(ic<0)
+				error("Jumped to negative address\n");
 			switch(program[ic]>>16) {
 			case NOP:
 				break;
@@ -182,40 +224,37 @@ public class Interpreter extends MiniJava  {
 				push(pop()*pop());
 				break;
 			case LDI:
-				push(program[ic]|0xFFFF);
+				val=program[ic]&0xFFFF;
+				if(val<0)
+					val|=0xFFFF<<16;
+				push(val);
 				break;
 			case LDS:
-				// TODO
+				push(stack[fp+program[ic]&0xFFFF]);
 				break;
 			case STS:
-				// TODO
+				stack[fp+program[ic]&0xFFFF]=pop();
 				break;
 			case JUMP:
-				ic=(program[ic]|0xFFFF)-1;
+				ic=(program[ic]&0xFFFF)-1;
 				break;
 			case JE:
 				o1=pop();
 				o2=pop();
-				push(o2);
-				push(o1);
 				if(o1==o2)
-					ic=(program[ic]|0xFFFF)-1;
+					ic=(program[ic]&0xFFFF)-1;
 				break;
 			case JNE:
 				o1=pop();
 				o2=pop();
-				push(o2);
-				push(o1);
 				if(o1!=o2)
-					ic=(program[ic]|0xFFFF)-1;
+					ic=(program[ic]&0xFFFF)-1;
 				break;
 			case JLT:
 				o1=pop();
 				o2=pop();
-				push(o2);
-				push(o1);
 				if(o1<o2)
-					ic=(program[ic]|0xFFFF)-1;
+					ic=(program[ic]&0xFFFF)-1;
 				break;
 			case IN:
 				push(MiniJava.readInt());
@@ -226,20 +265,37 @@ public class Interpreter extends MiniJava  {
 				MiniJava.writeConsole(out + "\n");
 				break;
 			case CALL:
-				// TODO
+				int addr=pop();
+				narg=program[ic]&0xFFFF;
+				int args[]=new int[narg];
+				for(int j=0; j<narg; j++)
+					args[j]=pop();
+				push(fp);
+				push(ic);
+				for(int j=args.length-1; j>=0; j--)
+					push(args[j]);
+				fp=sp-1;
+				ic=addr-1;
 				break;
 			case RETURN:
-				// TODO
+				int res=pop();
+				narg=program[ic]&0xFFFF;
+				for(int j=0; j<narg; j++)
+					pop();
+				ic=pop();
+				fp=pop();
+				push(res);
 				break;
 			case HALT:
 				System.exit(0);
 				break;
 			case ALLOC:
-				// TODO
+				sp++;
 				break;
 			default:
 				error("Unknown opcode " + (program[ic]<<16) + "\n");
 			}
+		}
 		int res=pop();
 		push(res);
 		return res;
@@ -247,8 +303,8 @@ public class Interpreter extends MiniJava  {
 
 	public static void main(String[] args) {
 		sp=0;
+		fp=0;
 		stack=new int[128];
-		//parse("ALLOC 1\nLDI 0\nSTS 1\nfrom:\nLDS 1\nOUT\nLDS 1\nLDI 1\nADD\nSTS 1\nJUMP from\n");
-		execute(parse("IN\nIN\nSUB\nOUT\n"));
+		execute(parse(readProgramConsole()));
 	}
 }
