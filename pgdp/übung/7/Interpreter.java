@@ -232,6 +232,8 @@ public class Interpreter extends MiniJava  {
 			case MOD:
 				o1=pop();
 				o2=pop();
+				if(o2==0)
+					error("Modulo by zero not allowed\n");
 				push(o1%o2);
 				break;
 			case LDI:
