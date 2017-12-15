@@ -303,7 +303,8 @@ public class Interpreter extends MiniJava  {
 				System.exit(0);
 				break;
 			case ALLOC:
-				sp++;
+				val=program[ic]&0xFFFF;
+				sp+=narg;
 				break;
 			default:
 				error("Unknown opcode " + (program[ic]>>16) + "\n");
@@ -318,6 +319,6 @@ public class Interpreter extends MiniJava  {
 		sp=0;
 		fp=0;
 		stack=new int[128];
-		execute(parse(readProgramConsole()));
+		return execute(parse(readProgramConsole()));
 	}
 }
