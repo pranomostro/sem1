@@ -27,8 +27,29 @@ public class Weihnachtsbaum extends BitteNichtAbgeben {
 		if (key != WeihnachtsElfen.NO_KEY) {
 			System.out.print(key);
 		}
-	}
 
+		switch(key) {
+		case WeihnachtsElfen.KEY_LEFT:
+			for(Weihnachtsobjekt wo: objekte) {
+				wo.moveLeft(staticObjects);
+			}
+			WeihnachtsElfen.removeMarkedForDeath(objekte);
+			break;
+		case WeihnachtsElfen.KEY_RIGHT:
+			for(Weihnachtsobjekt wo: objekte) {
+				wo.moveRight(staticObjects);
+			}
+			WeihnachtsElfen.removeMarkedForDeath(objekte);
+			break;
+		case WeihnachtsElfen.KEY_UP:
+			break;
+		case WeihnachtsElfen.KEY_DOWN:
+			for(Weihnachtsobjekt wo: objekte) {
+				wo.moveDown(staticObjects);
+			}
+			break;
+		}
+	}
 	/*********************************************/
 	/* Ab hier soll nichts mehr geändert werden! */
 	/*********************************************/
