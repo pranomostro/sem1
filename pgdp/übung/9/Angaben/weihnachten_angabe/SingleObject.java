@@ -8,6 +8,10 @@ public class SingleObject extends Weihnachtsobjekt {
 		this.foreground = foreground;
 	}
 
+	public void addObjektToSpielfeld(int[][] spielfeld) {
+		spielfeld[x][y]=foreground+background;
+	}
+
 	@Override
 	public String toString() {
 		return "" + this.getClass().getName() + "{" +
