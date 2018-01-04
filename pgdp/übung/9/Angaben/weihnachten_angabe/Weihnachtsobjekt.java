@@ -10,12 +10,17 @@ public class Weihnachtsobjekt {
 
 	public void addObjektToSpielfeld(int[][] spielfeld) { };
 
-	public boolean moveDown(boolean[][] staticObjects){
+	public boolean moveDown(boolean[][] staticObjects, boolean issingle){
+		if(staticObjects[x][y]==true)
+			return false;
 		if(y>=staticObjects[x].length-2) {
 			staticObjects[x][y]=true;
 			return false;
 		}
 		if(staticObjects[x][y+1]==true||y==staticObjects[0].length) {
+			if(issingle) {
+				y++;
+			}
 			staticObjects[x][y]=true;
 			return false;
 		}

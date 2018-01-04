@@ -28,14 +28,14 @@ public class Weihnachtsbaum extends BitteNichtAbgeben {
 		case WeihnachtsElfen.KEY_LEFT:
 			for(Weihnachtsobjekt w: objekte) {
 				w.moveLeft(staticObjects);
-				w.moveDown(staticObjects);
+				w.moveDown(staticObjects, false);
 			}
 			WeihnachtsElfen.removeMarkedForDeath(objekte);
 			break;
 		case WeihnachtsElfen.KEY_RIGHT:
 			for(Weihnachtsobjekt w: objekte) {
 				w.moveRight(staticObjects);
-				w.moveDown(staticObjects);
+				w.moveDown(staticObjects, false);
 			}
 			WeihnachtsElfen.removeMarkedForDeath(objekte);
 			break;
@@ -44,13 +44,13 @@ public class Weihnachtsbaum extends BitteNichtAbgeben {
 			break;
 		case WeihnachtsElfen.KEY_DOWN:
 			for(Weihnachtsobjekt w: objekte) {
-				w.moveDown(staticObjects);
+				w.moveDown(staticObjects, false);
 			}
 			break;
 		}
 
 		for(Weihnachtsobjekt w: objekte)
-			w.moveDown(staticObjects);
+			w.moveDown(staticObjects, false);
 
 		Weihnachtsobjekt wo=createRandomObjekt();
 		if(wo!=null) {

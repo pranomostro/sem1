@@ -12,7 +12,7 @@ public abstract class MultiObject extends Weihnachtsobjekt {
 		this.parts = new LinkedList<>();
 	}
 
-	public boolean moveDown(boolean[][] staticObjects) {
+	public boolean moveDown(boolean[][] staticObjects, boolean issingle) {
 		if(this.y>=staticObjects[0].length-2) {
 			for(Weihnachtsobjekt w: parts)
 				staticObjects[w.x][w.y]=true;
