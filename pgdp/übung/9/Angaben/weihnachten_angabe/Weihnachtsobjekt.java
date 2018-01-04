@@ -11,6 +11,10 @@ public class Weihnachtsobjekt {
 	public void addObjektToSpielfeld(int[][] spielfeld) { };
 
 	public boolean moveDown(boolean[][] staticObjects){
+		if(y>=staticObjects[x].length-2) {
+			staticObjects[x][y]=true;
+			return false;
+		}
 		if(staticObjects[x][y+1]==true||y==staticObjects[0].length) {
 			staticObjects[x][y]=true;
 			return false;
@@ -20,6 +24,8 @@ public class Weihnachtsobjekt {
 	};
 
 	public int moveLeft(boolean[][] staticObjects) {
+		if(staticObjects[x][y]==true)
+			return 0;
 		if(x<=0) {
 			markedForDeath=true;
 			return 0;
@@ -31,6 +37,8 @@ public class Weihnachtsobjekt {
 	};
 
 	public int moveRight(boolean[][] staticObjects) {
+		if(staticObjects[x][y]==true)
+			return 0;
 		if(x>=staticObjects.length-1) {
 			markedForDeath=true;
 			return 0;

@@ -9,7 +9,7 @@ public class Ast extends MultiObject{
 			am=new AstMitte(x+i+1, y, WeihnachtsElfen.BACKGROUND_GREEN_MIDDLE, WeihnachtsElfen.FOREGROUND_EMPTY);
 			parts.add(am);
 		}
-		AstRechts ar=new AstRechts(x+2*breite, y, WeihnachtsElfen.BACKGROUND_GREEN_RIGHT, WeihnachtsElfen.FOREGROUND_EMPTY);
+		AstRechts ar=new AstRechts(x+(2*breite)+1, y, WeihnachtsElfen.BACKGROUND_GREEN_RIGHT, WeihnachtsElfen.FOREGROUND_EMPTY);
 		parts.add(ar);
 	}
 }

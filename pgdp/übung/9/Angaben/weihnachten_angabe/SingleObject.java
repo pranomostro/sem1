@@ -9,7 +9,7 @@ public class SingleObject extends Weihnachtsobjekt {
 	}
 
 	public void addObjektToSpielfeld(int[][] spielfeld) {
-		spielfeld[x][y]=foreground+background;
+		spielfeld[x][y]+=foreground+background;
 	}
 
 	@Override

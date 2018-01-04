@@ -83,6 +83,21 @@ public class Weihnachtsbaum extends BitteNichtAbgeben {
 				break;
 			}
 		} else {
+			int i=(int)(Math.random()*10);
+			int xpos=(int)(1+(Math.random()*29));
+			switch(i) {
+			case WeihnachtsElfen.FOREGROUND_SNOWFLAKE:
+				res=new Schneeflocke(xpos, 1, WeihnachtsElfen.BACKGROUND_EMPTY, WeihnachtsElfen.FOREGROUND_SNOWFLAKE);
+				break;
+			case WeihnachtsElfen.FOREGROUND_BAUBLE:
+				res=new Weihnachtskugel(xpos, 1, WeihnachtsElfen.BACKGROUND_EMPTY, WeihnachtsElfen.FOREGROUND_BAUBLE);
+				break;
+			case WeihnachtsElfen.FOREGROUND_PENGUIN:
+				res=new Pinguin(xpos, 1, WeihnachtsElfen.BACKGROUND_EMPTY, WeihnachtsElfen.FOREGROUND_PENGUIN);
+				break;
+			default:
+				break;
+			}
 		}
 		return res;
 	}
