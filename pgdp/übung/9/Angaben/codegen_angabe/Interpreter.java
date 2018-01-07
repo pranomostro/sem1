@@ -57,6 +57,9 @@ public class Interpreter extends MiniJava  {
 		String res="";
 		for(int i=0; i<program.length; i++) {
 			res+=i + ": ";
+			int immediate=program[i]&0xFFFF;
+			if(immediate<0)
+				immediate|=0xFFFF<<16;
 			switch(program[i]>>16) {
 				case NOP: res+="NOP\n"; break;
 				case ADD: res+="ADD\n"; break;

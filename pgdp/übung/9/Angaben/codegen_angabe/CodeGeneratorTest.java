@@ -40,7 +40,7 @@ public class CodeGeneratorTest {
   }
 /*
   public void testProgram(Program program, int expectedRetVal) {
-    CodeGenerationVisitor cgv = new CodeGenerationVisitor();
+    Visitor cgv = new Visitor();
     program.accept(cgv);
     int retVal = Interpreter.execute(cgv.getProgram());
     assertEquals(expectedRetVal, retVal);
