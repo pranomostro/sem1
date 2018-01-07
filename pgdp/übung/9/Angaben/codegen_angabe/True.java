@@ -1,3 +1,2 @@
-public enum True {
-	True
+public class True {
 }

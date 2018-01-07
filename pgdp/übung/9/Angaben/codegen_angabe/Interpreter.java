@@ -283,7 +283,6 @@ public class Interpreter extends MiniJava  {
 				break;
 			case JUMP:
 				o1=pop();
-				push(o1);
 				if(o1==-1)
 					ic=(program[ic]&0xFFFF)-1;
 				break;
