@@ -25,9 +25,9 @@ public class Interpreter extends MiniJava  {
 	public static final int OR=20;
 	public static final int NOT=21;
 
-	private static int ic;
-	private static int sp, fp;
-	private static int[] stack;
+	private static int ic=0;
+	private static int sp=0, fp=0;
+	private static int[] stack=new int[128];
 	private static String[] lines;
 
 	static void error(String message) {
@@ -57,28 +57,28 @@ public class Interpreter extends MiniJava  {
 		String res="";
 		for(int i=0; i<program.length; i++) {
 			res+=i + ": ";
-			int immediate=program[i]&0xFFFF;
-			if(immediate<0)
-				immediate|=0xFFFF<<16;
+			int t=(program[i]&0xFFFF);
+			if(t>32768)
+				t|=0xFFFF<<16;
 			switch(program[i]>>16) {
 				case NOP: res+="NOP\n"; break;
 				case ADD: res+="ADD\n"; break;
 				case SUB: res+="SUB\n"; break;
 				case MUL: res+="MUL\n"; break;
 				case MOD: res+="MOD\n"; break;
-				case LDI: res+="LDI " + (program[i]&0xFFFF) + "\n"; break;
-				case LDS: res+="LDS " + (program[i]&0xFFFF) + "\n"; break;
-				case STS: res+="STS " + (program[i]&0xFFFF) + "\n"; break;
-				case JUMP: res+="JUMP " + (program[i]&0xFFFF) + "\n"; break;
+				case LDI: res+="LDI " + t + "\n"; break;
+				case LDS: res+="LDS " + t + "\n"; break;
+				case STS: res+="STS " + t + "\n"; break;
+				case JUMP: res+="JUMP " + t + "\n"; break;
 				case EQ: res+="EQ\n"; break;
 				case LT: res+="LT\n"; break;
 				case LE: res+="LE\n"; break;
 				case IN: res+="IN\n"; break;
 				case OUT: res+="OUT\n"; break;
-				case CALL: res+="CALL " + (program[i]&0xFFFF) + "\n"; break;
-				case RETURN: res+="RETURN " + (program[i]&0xFFFF) + "\n"; break;
+				case CALL: res+="CALL " + t + "\n"; break;
+				case RETURN: res+="RETURN " + t + "\n"; break;
 				case HALT: res+="HALT\n"; break;
-				case ALLOC: res+="ALLOC " + (program[i]&0xFFFF) + "\n"; break;
+				case ALLOC: res+="ALLOC " + t + "\n"; break;
 				case DIV: res+="DIV\n"; break;
 				case AND: res+="AND\n"; break;
 				case OR: res+="OR\n"; break;
@@ -247,7 +247,8 @@ public class Interpreter extends MiniJava  {
 
 	public static int execute(int[] program) {
 		int o1, o2, narg, val;
-		for(int ic=0; ic<program.length; ic++) {
+		boolean halt=false;
+		for(int ic=0; ic<program.length&&!halt; ic++) {
 			if(ic<0)
 				error("Jumped to negative address\n");
 			switch(program[ic]>>16) {
@@ -271,7 +272,7 @@ public class Interpreter extends MiniJava  {
 				break;
 			case LDI:
 				val=program[ic]&0xFFFF;
-				if(val<0)
+				if(val>32768)
 					val|=0xFFFF<<16;
 				push(val);
 				break;
@@ -341,7 +342,7 @@ public class Interpreter extends MiniJava  {
 				push(res);
 				break;
 			case HALT:
-				System.exit(0);
+				halt=true;
 				break;
 			case ALLOC:
 				val=program[ic]&0xFFFF;

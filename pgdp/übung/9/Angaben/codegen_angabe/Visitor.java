@@ -13,6 +13,11 @@ public class Visitor {
 		locals=new Stack<>();
 		functions=new Hashtable<>();
 		calls=new Hashtable<>();
+
+		calls.put(res.size(), "main");
+		res.add(5<<16);
+		res.add(14<<16|0&0xFFFF);
+		res.add(16<<16);
 	}
 
 	public int[] getProgram() {
@@ -76,8 +81,8 @@ public class Visitor {
 	public void visit(Comparison c) {
 		MiniJava.writeConsole("visiting Comparison\n");
 
-		c.getLhs().accept(this);
 		c.getRhs().accept(this);
+		c.getLhs().accept(this);
 
 		switch(c.getOperator()) {
 			case Equals: res.add(9<<16); break;
@@ -109,8 +114,8 @@ public class Visitor {
 	public void visit(Binary b) {
 		MiniJava.writeConsole("visiting Binary\n");
 
-		b.getLhs().accept(this);
 		b.getRhs().accept(this);
+		b.getLhs().accept(this);
 
 		switch(b.getOperator()) {
 			case Minus: res.add(2<<16); break;
@@ -141,12 +146,11 @@ public class Visitor {
 		MiniJava.writeConsole("visiting Declaration\n");
 
 		res.add(17<<16|(d.getNames().length&0xFFFF));
-		locals.push(new Hashtable<>());
 		for(int i=0; i<d.getNames().length; i++) {
 			if(locals.peek().get(i)!=null)
 				locals.peek().put(d.getNames()[i], locals.peek().size());
 			else
-				locals.peek().put(d.getNames()[i], i);
+				locals.peek().put(d.getNames()[i], i+1);
 		}
 	}
 
@@ -265,13 +269,15 @@ public class Visitor {
 
 		functions.put(f.getName(), res.size());
 		for(int i=0; i<f.getParameters().length; i++)
-			locals.peek().put(f.getParameters()[i], (-i)-1);
+			locals.peek().put(f.getParameters()[i], (-i));
 
 		for(Declaration d: f.getDeclarations())
 			d.accept(this);
 
 		for(Statement s: f.getStatements())
 			s.accept(this);
+
+		locals.pop();
 	}
 
 	public void visit(Call c) {
@@ -291,7 +297,12 @@ public class Visitor {
 		int l=locals.peek().size();
 		r.getExpression().accept(this);
 		res.add(15<<16|l&0xFFFF);
+	}
 
-		locals.pop();
+	public void visit(Program p) {
+		MiniJava.writeConsole("visiting Program\n");
+
+		for(Function f: p.getFunctions())
+			f.accept(this);
 	}
 }
