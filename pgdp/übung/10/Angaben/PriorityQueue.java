@@ -1,0 +1,104 @@
+
+public class PriorityQueue<ComparableThing extends Comparable> {
+
+  private final static int START_SIZE = 777;
+
+  private Class<ComparableThing> type; // Der Typ der gespeicherten Objektchen
+  private int count = 0;
+  private ComparableThing[] heap;
+
+  public PriorityQueue(Class<ComparableThing> type) {
+    this(type, PriorityQueue.START_SIZE);
+  }
+
+  public PriorityQueue(Class<ComparableThing> type, int START_SIZE) {
+    this.type = type;
+    @SuppressWarnings("unchecked") // Generic array creation via reflections
+    ComparableThing[] myHeap = (ComparableThing[])
+      java.lang.reflect.Array.newInstance(this.type, START_SIZE);
+    this.heap = myHeap;
+  }
+
+  // Make the array great again
+  private void trumpify() {
+    resize(heap.length * 2 + 1);
+  }
+
+  // Make the array very small
+  private void schulzify() {
+    resize(heap.length / 2);
+  }
+
+  private void resize(int newArraySize) {
+    @SuppressWarnings("unchecked") // Generic array creation via reflections
+    ComparableThing[] newHeap = (ComparableThing[])
+      java.lang.reflect.Array.newInstance(this.type, newArraySize);
+    System.arraycopy(heap, 0, newHeap, 0, Math.min(heap.length, newHeap.length));
+    heap = newHeap;
+  }
+
+  public int size() {
+    // TODO
+  }
+
+  public void clear() {
+    // TODO
+  }
+
+  public void add(ComparableThing newElement) {
+    // TODO
+  }
+
+  public ComparableThing poll() {
+    // TODO
+  }
+
+  public ComparableThing peek() {
+    // TODO
+  }
+
+
+  private void up(int index) {
+    // TODO
+  }
+
+  private void down(int index) {
+    // TODO
+  }
+
+
+  public static void main(String[] args) {
+    Test.main();
+  }
+
+}
+
+
+class Penguin implements Comparable<Penguin> {
+
+  private int cuddliness;
+
+  public Penguin(int cuddliness) {
+    this.cuddliness = cuddliness;
+  }
+
+  public int getCuddliness() {
+    return this.cuddliness;
+  }
+
+  public int compareTo(Penguin other) {
+    int oc = other.cuddliness;
+    if (cuddliness < oc) return -1;
+    if (cuddliness > oc) return 1;
+    return 0;
+  }
+}
+
+
+class Test {
+
+  public static void main() {
+    // Code zum Testen?
+  }
+
+}
