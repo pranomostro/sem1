@@ -1,4 +1,5 @@
 package dijkstra_angabe;
+
 import java.util.Comparator;
 
 public class EisschollenComparator implements Comparator<Eisscholle> {
