@@ -1,15 +1,9 @@
 package dijkstra_angabe;
 
 public class Eisscholle {
-
-	public final static int UNBEKANNT = 0;
-	public final static int VERMUTET = 1;
-	public final static int BEKANNT = 2;
-
 	private int distance;
 	private Eisscholle vorgaenger;
 	private final String name;
-	private int state = UNBEKANNT;
 
 	public Eisscholle(String n) {
 		name=n;
@@ -36,15 +30,5 @@ public class Eisscholle {
 
 	public int getDistance() {
 		return distance;
-	}
-
-	public void setState(int n) {
-		if(n<0||n>2)
-			return;
-		state=n;
-	}
-
-	public int getState() {
-		return state;
 	}
 }
