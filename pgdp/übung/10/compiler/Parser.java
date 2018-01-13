@@ -299,7 +299,6 @@ public class Parser {
 		Variable v=parseVar();
 		if(v!=null) {
 			if(program[from].equals("(")) {
-				MiniJava.writeConsole("found a function call\n");
 				from++;
 				ArrayList<Expression> args=new ArrayList<>();
 
@@ -319,8 +318,6 @@ public class Parser {
 
 				Expression e=parseExpr();
 
-				MiniJava.writeConsole("made it behind the first argument\n");
-
 				while(e!=null) {
 					args.add(e);
 					if(program[from].equals(")"))
@@ -330,8 +327,6 @@ public class Parser {
 						return null;
 					}
 					from++;
-
-					MiniJava.writeConsole("parsing argument list, at position from: " + from + "\n");
 
 					e=parseExpr();
 					if(from>=program.length-1) {
@@ -346,8 +341,6 @@ public class Parser {
 				}
 				from++;
 
-				MiniJava.writeConsole("finished parsing arguments, from: " + from + "\n");
-
 				Expression[] es=new Expression[args.size()];
 				es=args.toArray(es);
 
@@ -358,16 +351,11 @@ public class Parser {
 					return expressionize(new Call(v.getName(), es), ed);
 			}
 
-			MiniJava.writeConsole("didn't find a function call, using variable instead\n");
-
 			ExprDeriv ed=parseExprDeriv();
-			if(ed==null) {
-				MiniJava.writeConsole("returning the variable itself, after receiving null from parseExprDeriv()\n");
+			if(ed==null)
 				return v;
-			} else {
-				MiniJava.writeConsole("calling expressionize\n");
+			else
 				return expressionize(v, ed);
-			}
 		}
 
 		from=save;
@@ -454,7 +442,6 @@ public class Parser {
 
 			return new ExprDeriv(b, e, ed);
 		}
-		MiniJava.writeConsole("no ExprDeriv found\n");
 		from=save;
 		return null;
 	}

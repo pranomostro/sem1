@@ -7,14 +7,19 @@ public class Visitor {
 	private Stack<Hashtable<String, Integer>> locals;
 	private Hashtable<String, Integer> functions;
 	private Hashtable<Integer, String> calls;
+	private Hashtable<String, Integer> arities;
+	private Hashtable<Integer, Integer> callarities;
 
 	public Visitor() {
 		res=new ArrayList<>();
 		locals=new Stack<>();
 		functions=new Hashtable<>();
 		calls=new Hashtable<>();
+		arities=new Hashtable<>();
+		callarities=new Hashtable<>();
 
 		calls.put(res.size(), "main");
+		callarities.put(res.size(), 0);
 		res.add(5<<16);
 		res.add(14<<16|0&0xFFFF);
 		res.add(16<<16);
@@ -26,6 +31,8 @@ public class Visitor {
 		for(Integer i: calls.keySet()) {
 			String s=calls.get(i);
 			Integer fl=functions.get(s);
+			if(callarities.get(i)!=arities.get(s))
+				throw new RuntimeException("called function " + s + " with " + callarities.get(i) + " instead of " + arities.get(s) + " arguments\n");
 			if(fl==null)
 				throw new RuntimeException("unknown function " + s + "\n");
 			res.set(i, 5<<16|((int)fl)&0xFFFF);
@@ -147,8 +154,8 @@ public class Visitor {
 
 		res.add(17<<16|(d.getNames().length&0xFFFF));
 		for(int i=0; i<d.getNames().length; i++) {
-			if(locals.peek().get(i)!=null)
-				locals.peek().put(d.getNames()[i], locals.peek().size());
+			if(locals.peek().get(d.getNames()[i])!=null)
+				throw new RuntimeException("declaring variable " + d.getNames()[i] +  " twice\n");
 			else
 				locals.peek().put(d.getNames()[i], i+1);
 		}
@@ -268,6 +275,7 @@ public class Visitor {
 		locals.push(new Hashtable<>());
 
 		functions.put(f.getName(), res.size());
+		arities.put(f.getName(), f.getParameters().length);
 		for(int i=0; i<f.getParameters().length; i++)
 			locals.peek().put(f.getParameters()[i], (-i));
 
@@ -287,6 +295,7 @@ public class Visitor {
 			e.accept(this);
 
 		calls.put(res.size(), c.getFunctionName());
+		callarities.put(res.size(), c.getArguments().length);
 		res.add(5<<16);
 		res.add(14<<16|c.getArguments().length&0xFFFF);
 	}
