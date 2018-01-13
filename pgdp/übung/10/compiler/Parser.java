@@ -3,8 +3,15 @@ import java.util.ArrayList;
 import java.util.regex.*;
 
 public class Parser {
-	private String[] program;
-	private int from;
+	private static String[] program;
+	private static int from;
+
+	public Parser(String p) {
+		program=lex(p);
+
+		for(int i=0; i<program.length; i++)
+			MiniJava.writeConsole("" + i + ": " + program[i] + "\n");
+	}
 
 	public static String readProgramConsole() {
 		@SuppressWarnings("resource")
@@ -56,6 +63,17 @@ public class Parser {
 					continue;
 				}
 			}
+			if(program.charAt(i)=='!') {
+				if(i>=program.length()-1||program.charAt(i+1)!='=') {
+					tokens.add(""+program.charAt(i));
+					i++;
+					continue;
+				} else {
+					tokens.add(program.substring(i, i+2));
+					i+=2;
+					continue;
+				}
+			}
 			String toend=program.substring(i);
 			if(toend.startsWith("&&")||toend.startsWith("||")) {
 				tokens.add(program.substring(i, i+2));
@@ -89,20 +107,24 @@ public class Parser {
 
 	/* ✔ */
 
-	public static Expression expressionize(Expression e, ExprDeriv ed) {
-		if(ed.getExprDeriv()==null)
-			return new Binary(e, ed.getBinop()(), ed.getExpr());
+	public static Binary expressionize(Expression e, ExprDeriv ed) {
+		MiniJava.writeConsole("expressionize called\n");
 
-		return new Binary(e, ed.getBinop(), expressionize(ed.getExpr(), ed.getExprDeriv());
+		if(ed.getExprDeriv()==null)
+			return new Binary(e, ed.getBinop(), ed.getExpr());
+
+		return new Binary(e, ed.getBinop(), expressionize(ed.getExpr(), ed.getExprDeriv()));
 	}
 
 	/* ✔ */
 
-	public static Condition conditionize(Condition c, CondDeriv cd) {
-		if(cd.getCondDeriv()==null)
-			return new Comparison(c, cd.getBbinop(), cd.getCond());
+	public static BinaryCondition conditionize(Condition c, CondDeriv cd) {
+		MiniJava.writeConsole("conditionize called\n");
 
-		return new Comparison(c, cd.getBbinop(), conditionize(cd.getCond(), cd.getCondDeriv());
+		if(cd.getCondDeriv()==null)
+			return new BinaryCondition(c, cd.getBbinop(), cd.getCond());
+
+		return new BinaryCondition(c, cd.getBbinop(), conditionize(cd.getCond(), cd.getCondDeriv()));
 	}
 
 	/*
@@ -114,8 +136,8 @@ public class Parser {
 
 	/* ✔ */
 
-	public static Variable parseName() {
-		MiniJava.writeConsole("parseName called with from: " + from + "\n");
+	public static Variable parseVar() {
+		MiniJava.writeConsole("parseVar called with from: " + from + "\n");
 
 		if(!program[from].matches("[a-zA-Z][a-zA-Z0-9]*"))
 			return null;
@@ -126,15 +148,17 @@ public class Parser {
 
 	/* ✔ */
 
-	public static Number parseNumber(String[] program, int from) {
+	public static Number parseNumber() {
 		MiniJava.writeConsole("parseNumber called with from: " + from + "\n");
+		Number n;
 
 		if(!program[from].matches("[0-9]+"))
 			return null;
 		try {
-			Number n=new Number(Integer.parseInt(program[from]);
+			n=new Number(Integer.parseInt(program[from]));
 		} catch(Exception e) {
 			/* can't be reached, since we arealdy checked whether it's a number representation */
+			return null;
 		}
 		from++;
 		return n;
@@ -170,25 +194,23 @@ public class Parser {
 			return null;
 		}
 
-		Variable v=parseName();
-
+		Variable v=parseVar();
 		if(from>=program.length||v==null) {
 			from=save;
 			return null;
 		}
 
-		while(program[from].equals(",")) {
+		while(v!=null) {
 			vars.add(v);
-			from++;
-
-			if(from>=program.length) {
+			if(program[from].equals(";"))
+				break;
+			if(!program[from].equals(",")) {
 				from=save;
 				return null;
 			}
-
-			v=parseName();
-
-			if(from>=program.length||v==null) {
+			from++;
+			v=parseVar();
+			if(from>=program.length-1) {
 				from=save;
 				return null;
 			}
@@ -202,8 +224,9 @@ public class Parser {
 		from++;
 
 		String[] names=new String[vars.size()];
-		for(int i=0; i<vars.size(); i++)
+		for(int i=0; i<vars.size(); i++) {
 			names[i]=vars.get(i).getName();
+		}
 
 		return new Declaration(names);
 	}
@@ -213,7 +236,7 @@ public class Parser {
 	public static Unop parseUnop() {
 		MiniJava.writeConsole("parseUnop called with from: " + from + "\n");
 
-		if(!program[from].equals("-"))
+		if(!program[from-1].equals("-"))
 			return null;
 		from++;
 		return Unop.Minus;
@@ -226,7 +249,7 @@ public class Parser {
 
 		from++;
 
-		switch(program[from]) {
+		switch(program[from-1]) {
 			case "-": return Binop.Minus;
 			case "+": return Binop.Plus;
 			case "*": return Binop.MultiplicationOperator;
@@ -243,7 +266,7 @@ public class Parser {
 
 		from++;
 
-		switch(program[from]) {
+		switch(program[from-1]) {
 			case "==": return Comp.Equals;
 			case "!=": return Comp.NotEquals;
 			case "<=": return Comp.LessEqual;
@@ -262,7 +285,6 @@ public class Parser {
 		int save=from;
 
 		Number n=parseNumber();
-
 		if(n!=null) {
 			ExprDeriv ed=parseExprDeriv();
 
@@ -274,15 +296,78 @@ public class Parser {
 
 		from=save;
 
-		Name nm=parseName(program, from);
+		Variable v=parseVar();
+		if(v!=null) {
+			if(program[from].equals("(")) {
+				MiniJava.writeConsole("found a function call\n");
+				from++;
+				ArrayList<Expression> args=new ArrayList<>();
 
-		if(nm!=null) {
-			ExpressionDeriv ed=parseExprDeriv();
+				if(from>=program.length) {
+					from=save;
+					return null;
+				}
 
-			if(ed==null)
-				return nm;
-			else
-				return expressionize(nm, ed);
+				if(program[from].equals(")")) {
+					from++;
+					if(from>=program.length) {
+						from=save;
+						return null;
+					}
+					return new Call(v.getName(), new Expression[] {});
+				}
+
+				Expression e=parseExpr();
+
+				MiniJava.writeConsole("made it behind the first argument\n");
+
+				while(e!=null) {
+					args.add(e);
+					if(program[from].equals(")"))
+						break;
+					if(!program[from].equals(",")) {
+						from=save;
+						return null;
+					}
+					from++;
+
+					MiniJava.writeConsole("parsing argument list, at position from: " + from + "\n");
+
+					e=parseExpr();
+					if(from>=program.length-1) {
+						from=save;
+						return null;
+					}
+				}
+
+				if(from>=program.length-1||!program[from].equals(")")) {
+					from=save;
+					return null;
+				}
+				from++;
+
+				MiniJava.writeConsole("finished parsing arguments, from: " + from + "\n");
+
+				Expression[] es=new Expression[args.size()];
+				es=args.toArray(es);
+
+				ExprDeriv ed=parseExprDeriv();
+				if(ed==null)
+					return new Call(v.getName(), es);
+				else
+					return expressionize(new Call(v.getName(), es), ed);
+			}
+
+			MiniJava.writeConsole("didn't find a function call, using variable instead\n");
+
+			ExprDeriv ed=parseExprDeriv();
+			if(ed==null) {
+				MiniJava.writeConsole("returning the variable itself, after receiving null from parseExprDeriv()\n");
+				return v;
+			} else {
+				MiniJava.writeConsole("calling expressionize\n");
+				return expressionize(v, ed);
+			}
 		}
 
 		from=save;
@@ -294,7 +379,7 @@ public class Parser {
 				return null;
 			}
 
-			Expr e=parseExpr();
+			Expression e=parseExpr();
 			if(from>=program.length||e==null) {
 				from=save;
 				return null;
@@ -349,7 +434,6 @@ public class Parser {
 		int save=from;
 
 		Binop b=parseBinop();
-
 		if(b!=null) {
 			if(from>=program.length) {
 				from=save;
@@ -370,6 +454,7 @@ public class Parser {
 
 			return new ExprDeriv(b, e, ed);
 		}
+		MiniJava.writeConsole("no ExprDeriv found\n");
 		from=save;
 		return null;
 	}
@@ -381,7 +466,7 @@ public class Parser {
 
 		from++;
 
-		switch(program[from]) {
+		switch(program[from-1]) {
 			case "&&": return Bbinop.And;
 			case "||": return Bbinop.Or;
 			default: from--; return null;
@@ -474,9 +559,7 @@ public class Parser {
 			}
 
 			Comp c=parseComp();
-
-			if(from>=program.length||c==null) {
-				from=save;
+			if(from>=program.length||c==null) {				from=save;
 				return null;
 			}
 
@@ -488,9 +571,9 @@ public class Parser {
 
 			CondDeriv cd=parseCondDeriv();
 			if(cd==null)
-				return new Comparison(e, comp, e1);
+				return new Comparison(e, c, e1);
 			else
-				return conditionize(new Condition(e, c, e1), cd);
+				return conditionize(new Comparison(e, c, e1), cd);
 		}
 
 		from=save;
@@ -510,7 +593,6 @@ public class Parser {
 			from++;
 
 			Condition c=parseCond();
-
 			if(from>=program.length||c==null) {
 				from=save;
 				return null;
@@ -542,7 +624,6 @@ public class Parser {
 		int save=from;
 
 		Bbinop b=parseBbinop();
-
 		if(b!=null) {
 			if(from>=program.length) {
 				from=save;
@@ -567,217 +648,412 @@ public class Parser {
 		return null;
 	}
 
-	public static int parseStmt(String[] program, int from) {
+	/* ✔ */
+
+	public static Statement parseStmt() {
 		MiniJava.writeConsole("parseStmt called with from: " + from + "\n");
 
-		int np;
+		int save=from;
 
 		if(program[from].equals(";")) {
-			return from+1;
+			from++;
+			return new Statement();
 		}
 
 		if(program[from].equals("{")) {
+			ArrayList<Statement> stmts=new ArrayList<>();
+
 			from++;
-			if(from>=program.length)
-				return -1;
-
-			np=parseStmt(program, from);
-			if(np>=program.length)
-				return -1;
-
-			while(np!=-1) {
-				from=np;
-				np=parseStmt(program, from);
-				if(np>=program.length)
-					return -1;
+			if(from>=program.length) {
+				from=save;
+				return null;
 			}
-			if(!program[from].equals("}"))
-				return -1;
 
-			return from+1;
+			Statement s=parseStmt();
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
+
+			while(s!=null) {
+				stmts.add(s);
+				s=parseStmt();
+				if(from>=program.length) {
+					from=save;
+					return null;
+				}
+			}
+
+			if(!program[from].equals("}")) {
+				from=save;
+				return null;
+			}
+			from++;
+
+			Statement[] st=new Statement[stmts.size()];
+			return new Composite(stmts.toArray(st));
 		}
 
 		if(program[from].equals("write")) {
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length||!program[from].equals("(")) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals("("))
-				return -1;
 			from++;
-			if(from>=program.length)
-				return -1;
 
-			np=parseExpr(program, from);
-			if(np<0||np>=program.length)
-				return -1;
-			from=np;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals(")"))
-				return -1;
+			Expression e=parseExpr();
+			if(from>=program.length||e==null) {
+				from=save;
+				return null;
+			}
 
-			return from+1;
+			if(!program[from].equals(")")) {
+				from=save;
+				return null;
+			}
+			from++;
+			return new Write(e);
+		}
+
+		if(program[from].equals("return")) {
+			from++;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
+
+			Expression e=parseExpr();
+			if(from>=program.length||e==null) {
+				from=save;
+				return null;
+			}
+
+			if(!program[from].equals(";")) {
+				from=save;
+				return null;
+			}
+			from++;
+			return new Return(e);
 		}
 
 		if(program[from].equals("while")) {
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length||!program[from].equals("(")) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals("("))
-				return -1;
 			from++;
-			if(from>=program.length)
-				return -1;
 
-			np=parseCond(program, from);
-			if(np<0||np>=program.length)
-				return -1;
-			from=np;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals(")"))
-				return -1;
+			Condition c=parseCond();
+			if(from>=program.length||c==null) {
+				from=save;
+				return null;
+			}
+
+			if(!program[from].equals(")")) {
+				from=save;
+				return null;
+			}
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
-			np=parseStmt(program, from);
-			if(np<0)
-				return -1;
+			Statement s=parseStmt();
+			if(from>=program.length||s==null) {
+				from=save;
+				return null;
+			}
 
-			return np;
+			return new While(c, s);
 		}
 
 		if(program[from].equals("if")) {
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length||!program[from].equals("(")) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals("("))
-				return -1;
 			from++;
-			if(from>=program.length)
-				return -1;
 
-			np=parseCond(program, from);
-			if(np<0||np>=program.length)
-				return -1;
-			from=np;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals(")"))
-				return -1;
+			Condition c=parseCond();
+			if(from>=program.length||c==null) {
+				from=save;
+				return null;
+			}
+
+			if(!program[from].equals(")")) {
+				from=save;
+				return null;
+			}
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
-			np=parseStmt(program, from);
-			if(np<0)
-				return -1;
-			from=np;
+			Statement s=parseStmt();
+			if(from>=program.length||s==null) {
+				from=save;
+				return null;
+			}
 
 			if(program[from].equals("else")) {
 				from++;
-				if(np>=program.length)
-					return -1;
+				if(from>=program.length) {
+					from=save;
+					return null;
+				}
 
-				np=parseStmt(program, from);
-				if(np>=0)
-					from=np;
-			}
-
-			return from;
+				Statement e=parseStmt();
+				if(from>=program.length||s==null) {
+					from=save;
+					return null;
+				}
+				return new IfThenElse(c, s, e);
+			} else
+				return new IfThen(c, s);
 		}
 
-		np=parseName(program, from);
-		if(np>=0) {
-			if(np>=program.length)
-				return -1;
-			from=np;
+		Variable v=parseVar();
+		if(v!=null) {
+			if(from>=program.length||!program[from].equals("=")) {
+				from=save;
+				return null;
+			}
 
-			if(!program[from].equals("="))
-				return -1;
 			from++;
-			if(from>=program.length)
-				return -1;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 
 			if(program[from].equals("read")) {
 				from++;
-				if(from>=program.length)
-					return -1;
-
-				if(!program[from].equals("("))
-					return -1;
+				if(from>=program.length||!program[from].equals("(")) {
+					from=save;
+					return null;
+				}
 				from++;
-				if(from>=program.length)
-					return -1;
-
-				if(!program[from].equals(")"))
-					return -1;
+				if(from>=program.length||!program[from].equals(")")) {
+					from=save;
+					return null;
+				}
 				from++;
-				if(from>=program.length)
-					return -1;
+				if(from>=program.length||!program[from].equals(";")) {
+					from=save;
+					return null;
+				}
+				return new Read(v.getName());
 			} else {
-				np=parseExpr(program, from);
-				if(np<0||np>=program.length)
-					return -1;
-				from=np;
+				Expression e=parseExpr();
+				if(from>=program.length||e==null) {
+					from=save;
+					return null;
+				}
+				if(from>=program.length||!program[from].equals(";")) {
+					from=save;
+					return null;
+				}
+				from++;
+				return new Assignment(v.getName(), e);
 			}
-
-			if(!program[from].equals(";"))
-				return -1;
-			from++;
-
-			return from;
 		}
 
-		return -1;
+		return null;
+	}
+
+	public static String[] parseParams() {
+		MiniJava.writeConsole("parseParams called with from: " + from + "\n");
+
+		ArrayList<String> params=new ArrayList<>();
+
+		if(program[from].equals(")"))
+			return new String[] {};
+
+		int save=from;
+
+		Object o=parseType();
+
+		if(from>=program.length||o==null) {
+			from=save;
+			return null;
+		}
+
+		Variable v=parseVar();
+
+		if(from>=program.length) {
+			from=save;
+			return null;
+		}
+
+		while(v!=null) {
+			params.add(v.getName());
+			if(program[from].equals(")"))
+				break;
+			if(!program[from].equals(",")) {
+				from=save;
+				return null;
+			}
+			from++;
+
+			o=parseType();
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
+			if(o==null)
+				break;
+
+			v=parseVar();
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
+		}
+
+		String[] ps=new String[params.size()];
+		ps=params.toArray(ps);
+		return ps;
 	}
 
 	/* ✔ */
 
-	public static Program parseProgram() {
+	public static Function parseFunction() {
+		MiniJava.writeConsole("parseFunction called with from: " + from + "\n");
+
 		ArrayList<Declaration> decls=new ArrayList<>();
 		ArrayList<Statement> stmts=new ArrayList<>();
+		String[] ps;
+
+		int save=from;
+
+		Object o=parseType();
+		if(from>=program.length||o==null) {
+			from=save;
+			return null;
+		}
+
+		Variable v=parseVar();
+		if(from>=program.length||v==null||!program[from].equals("(")) {
+			from=save;
+			return null;
+		}
+		from++;
+
+		if(from>=program.length) {
+			from=save;
+			return null;
+		}
+
+		ps=parseParams();
+
+		if(from>=program.length||ps==null) {
+			from=save;
+			return null;
+		}
+
+		if(from>=program.length-2||!program[from].equals(")")&&!program[from+1].equals("{")) {
+			from=save;
+			return null;
+		}
+
+		from+=2;
 
 		Declaration d=parseDecl();
-
-		if(from>=program.length)
-			return 0;
+		if(from>=program.length) {
+			from=save;
+			return null;
+		}
 
 		while(d!=null) {
 			decls.add(d);
-			d=parseDecl(program, pos);
-			if(from>=program.length)
-				return 0;
+			d=parseDecl();
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 		}
 
 		Statement s=parseStmt();
-
-		if(from>=program.length)
-			return 0;
+		if(from>=program.length) {
+			from=save;
+			return null;
+		}
 
 		while(s!=null) {
 			stmts.add(s);
 			s=parseStmt();
-			if(from>=program.length)
-				return 0;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
 		}
 
-		Declaration[] d=new Declaration[decls.size()];
-		d=decls.toArray(d);
-		Statement[] s=new Statement[stmts.size()];
-		s=stmts.toArray(s);
+		if(!program[from].equals("}")) {
+			from=save;
+			return null;
+		}
 
-		return new Program(d, s);
+		from++;
+
+		Declaration[] ds=new Declaration[decls.size()];
+		ds=decls.toArray(ds);
+		Statement[] ss=new Statement[stmts.size()];
+		ss=stmts.toArray(ss);
+
+		return new Function(v.getName(), ps, ds, ss);
 	}
 
-	public static void main(String[] args) {
-		MiniJava.writeConsole("Please enter a MiniJava program.\n");
-		program=lex(readProgramConsole());
+	/* ✔ */
+
+	public static Program parse() {
+		ArrayList<Function> funcs=new ArrayList<>();
+
 		from=0;
-		if(parse())!=null)
-			MiniJava.writeConsole("program is syntactically valid\n");
-		else
-			MiniJava.writeConsole("program is syntactically invalid\n");
+
+		Function f=parseFunction();
+
+		if(from>=program.length) {
+			funcs.add(f);
+			f=null;
+		}
+
+		while(f!=null) {
+			funcs.add(f);
+			if(from>=program.length)
+				break;
+			f=parseFunction();
+		}
+
+		if(from<program.length) {
+			MiniJava.writeConsole("program was not completely parsed\n");
+			return null;
+		}
+
+		Function[] fs=new Function[funcs.size()];
+		fs=funcs.toArray(fs);
+
+		return new Program(fs);
 	}
 }

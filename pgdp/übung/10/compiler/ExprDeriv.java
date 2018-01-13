@@ -6,7 +6,7 @@ public class ExprDeriv {
 	public ExprDeriv(Binop bo, Expression expr, ExprDeriv exprd) {
 		b=bo;
 		e=expr;
-		ed=expr;
+		ed=exprd;
 	}
 
 	public Binop getBinop() {
