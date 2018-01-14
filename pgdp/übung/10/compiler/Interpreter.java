@@ -27,7 +27,7 @@ public class Interpreter extends MiniJava  {
 
 	private static int ic=0;
 	private static int sp=0, fp=0;
-	private static int[] stack=new int[128];
+	private static int[] stack=new int[32];
 	private static String[] lines;
 
 	static void error(String message) {
@@ -249,6 +249,7 @@ public class Interpreter extends MiniJava  {
 		int o1, o2, narg, val;
 		boolean halt=false;
 		for(int ic=0; ic<program.length&&!halt; ic++) {
+			MiniJava.writeConsole("executing instruction at address " + ic + "\n");
 			if(ic<0)
 				error("Jumped to negative address\n");
 			switch(program[ic]>>16) {
@@ -325,6 +326,10 @@ public class Interpreter extends MiniJava  {
 				int args[]=new int[narg];
 				for(int j=0; j<narg; j++)
 					args[j]=pop();
+				MiniJava.writeConsole("calling function with arguments : ");
+				for(int j=0; j<narg; j++)
+					MiniJava.writeConsole("" + args[j] + " ");
+				MiniJava.writeConsole("\n");
 				push(fp);
 				push(ic);
 				for(int j=args.length-1; j>=0; j--)

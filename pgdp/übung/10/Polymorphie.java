@@ -25,7 +25,7 @@ public class Polymorphie {
 		b.m(a); //B.A+
 		b.m((A) b); //B.A+
 		b.m((A) c); //B.A+
-		b.m((B) a); //Exception
+		//b.m((B) a); //Exception
 		b.m(c); //B.C+
 	}
 }

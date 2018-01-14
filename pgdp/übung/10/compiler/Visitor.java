@@ -276,8 +276,10 @@ public class Visitor {
 
 		functions.put(f.getName(), res.size());
 		arities.put(f.getName(), f.getParameters().length);
-		for(int i=0; i<f.getParameters().length; i++)
+		for(int i=0; i<f.getParameters().length; i++) {
+			MiniJava.writeConsole("adding parameter " + f.getParameters()[i] + " at position " + (-i) + "\n");
 			locals.peek().put(f.getParameters()[i], (-i));
+		}
 
 		for(Declaration d: f.getDeclarations())
 			d.accept(this);
@@ -291,8 +293,9 @@ public class Visitor {
 	public void visit(Call c) {
 		MiniJava.writeConsole("visiting Call\n");
 
-		for(Expression e: c.getArguments())
-			e.accept(this);
+		Expression[] es=c.getArguments();
+		for(int i=es.length-1; i>=0; i--)
+			es[i].accept(this);
 
 		calls.put(res.size(), c.getFunctionName());
 		callarities.put(res.size(), c.getArguments().length);
