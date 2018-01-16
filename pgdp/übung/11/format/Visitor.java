@@ -29,7 +29,9 @@ public class Visitor {
 			case Modulo: res+=" % "; break;
 			default: break;
 		}
-		if(b.firstLevelPriority()>b.getRhs().firstLevelPriority()) {
+		if(b.firstLevelPriority()>b.getRhs().firstLevelPriority()||
+		  (b.getOperator()==Binop.Minus&&(b.getRhs() instanceof Binary))||
+		  (b.getOperator()==Binop.DivisionOperator&&(b.getRhs() instanceof Binary))) {
 			res+="(";
 			b.getRhs().accept(this);
 			res+=")";

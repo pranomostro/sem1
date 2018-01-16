@@ -9,7 +9,7 @@ public class Unary extends Expression implements Visitable {
 
 	public int firstLevelPriority() {
 		switch(operator) {
-			case Minus: return 7;
+			case Minus: return 6;
 		}
 		return -1;
 	}
