@@ -268,6 +268,10 @@ public class Interpreter extends MiniJava  {
 		for(int ic=0; ic<program.length&&!halt; ic++) {
 			if(ic<0)
 				error("Jumped to negative address\n");
+			MiniJava.writeConsole("executing at ic: " + ic + ": ");
+			for(int j=0; j<sp; j++)
+				MiniJava.writeConsole(stack[j] + " ");
+			MiniJava.writeConsole("\n");
 			switch(program[ic]>>16) {
 			case NOP:
 				break;
@@ -379,16 +383,14 @@ public class Interpreter extends MiniJava  {
 				break;
 			case LDH:
 				addr=pop();
-				begin=heap[heap.length-1-addr]>>16;
 				offset=pop();
-				push(heap[begin+offset]);
+				push(heap[addr+offset]);
 				break;
 			case STH:
 				addr=pop();
-				begin=heap[heap.length-1-addr]>>16;
 				offset=pop();
 				val=pop();
-				heap[begin+offset]=val;
+				heap[addr+offset]=val;
 				break;
 			case ALLOCH:
 				int size=pop();

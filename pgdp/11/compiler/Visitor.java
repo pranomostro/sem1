@@ -7,13 +7,18 @@ public class Visitor {
 	private Stack<Hashtable<String, Integer>> locals;
 	private Hashtable<String, Integer> functions;
 	private Hashtable<Integer, String> calls;
+	private Hashtable<String, Integer> arities;
+	private Hashtable<Integer, Integer> callarities;
 
 	public Visitor() {
 		res=new ArrayList<>();
 		locals=new Stack<>();
 		functions=new Hashtable<>();
 		calls=new Hashtable<>();
+		arities=new Hashtable<>();
+		callarities=new Hashtable<>();
 
+		callarities.put(res.size(), 0);
 		calls.put(res.size(), "main");
 		res.add(5<<16);
 		res.add(14<<16|0&0xFFFF);
@@ -26,6 +31,8 @@ public class Visitor {
 		for(Integer i: calls.keySet()) {
 			String s=calls.get(i);
 			Integer fl=functions.get(s);
+			if(callarities.get(i)!=arities.get(s))
+				throw new RuntimeException("called function " + s + " with " + callarities.get(i) + " instead of " + arities.get(s) + " arguments.\n");
 			if(fl==null)
 				throw new RuntimeException("unknown function " + s + "\n");
 			res.set(i, 5<<16|((int)fl)&0xFFFF);
@@ -142,18 +149,6 @@ public class Visitor {
 		}
 	}
 
-	public void visit(Declaration d) {
-		MiniJava.writeConsole("visiting Declaration\n");
-
-		res.add(17<<16|(d.getNames().length&0xFFFF));
-		for(int i=0; i<d.getNames().length; i++) {
-			if(locals.peek().get(i)!=null)
-				locals.peek().put(d.getNames()[i], locals.peek().size());
-			else
-				locals.peek().put(d.getNames()[i], i+1);
-		}
-	}
-
 	public void visit(Assignment a) {
 		MiniJava.writeConsole("visiting Assignment\n");
 
@@ -265,14 +260,31 @@ public class Visitor {
 	public void visit(Function f) {
 		MiniJava.writeConsole("visiting Function\n");
 
+		int at=1;
 		locals.push(new Hashtable<>());
 
 		functions.put(f.getName(), res.size());
-		for(int i=0; i<f.getParameters().length; i++)
+		arities.put(f.getName(), f.getParameters().length);
+		for(int i=0; i<f.getParameters().length; i++) {
+			MiniJava.writeConsole("adding parameter " + f.getParameters()[i] + " at position " + (-i) + "\n");
 			locals.peek().put(f.getParameters()[i], (-i));
+		}
 
-		for(Declaration d: f.getDeclarations())
-			d.accept(this);
+		for(Declaration d: f.getDeclarations()) {
+			for(int i=0; i<d.getNames().length; i++) {
+				if(locals.peek().get(d.getNames()[i])!=null)
+					throw new RuntimeException("declaring variable " + d.getNames()[i] + " twice\n");
+				else {
+					MiniJava.writeConsole("declaring variable " + d.getNames()[i] + " at position " + at + ".\n");
+					locals.peek().put(d.getNames()[i], at);
+					at++;
+				}
+			}
+		}
+
+		MiniJava.writeConsole("allocating " + (at-1) + " variables.\n");
+
+		res.add(17<<16|(at-1)&0xFFFF);
 
 		for(Statement s: f.getStatements())
 			s.accept(this);
@@ -283,10 +295,12 @@ public class Visitor {
 	public void visit(Call c) {
 		MiniJava.writeConsole("visiting Call\n");
 
-		for(Expression e: c.getArguments())
-			e.accept(this);
+		Expression[] es=c.getArguments();
+		for(int i=es.length-1; i>=0; i--)
+			es[i].accept(this);
 
 		calls.put(res.size(), c.getFunctionName());
+		callarities.put(res.size(), c.getArguments().length);
 		res.add(5<<16);
 		res.add(14<<16|c.getArguments().length&0xFFFF);
 	}
@@ -306,15 +320,30 @@ public class Visitor {
 			f.accept(this);
 	}
 
-	public void visit(Access a) {
-		MiniJava.writeConsole("visiting Access\n");
-	}
-
 	public void visit(Allocation a) {
 		MiniJava.writeConsole("visiting Allocation\n");
+
+		a.getSize().accept(this);
+
+		res.add(24<<16);
+	}
+
+	public void visit(Access a) {
+		MiniJava.writeConsole("visiting Access\n");
+
+		a.getIndex().accept(this);
+		a.getName().accept(this);
+
+		res.add(22<<16);
 	}
 
 	public void visit(ArrAssignment aa) {
 		MiniJava.writeConsole("visiting ArrAssignment\n");
+
+		aa.getValue().accept(this);
+		aa.getIndex().accept(this);
+		aa.getVar().accept(this);
+
+		res.add(23<<16);
 	}
 }

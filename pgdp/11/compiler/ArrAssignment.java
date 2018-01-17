@@ -1,16 +1,16 @@
 public class ArrAssignment extends Statement {
-	private String name;
+	private Variable var;
 	private Expression index;
 	private Expression value;
 
-	public ArrAssignment(String s, Expression i, Expression v) {
-		name=s;
+	public ArrAssignment(Variable v, Expression i, Expression r) {
+		var=v;
 		index=i;
-		value=v;
+		value=r;
 	}
 
-	public String getName() {
-		return name;
+	public Variable getVar() {
+		return var;
 	}
 
 	public Expression getIndex() {

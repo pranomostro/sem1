@@ -1,14 +1,14 @@
 public class Access extends Expression {
-	private String name;
+	private Variable var;
 	private Expression index;
 
-	public Access(String s, Expression e) {
-		name=s;
+	public Access(Variable v, Expression e) {
+		var=v;
 		index=e;
 	}
 
-	public String getName() {
-		return name;
+	public Variable getName() {
+		return var;
 	}
 
 	public Expression getIndex() {

@@ -424,9 +424,9 @@ public class Parser {
 
 				ExprDeriv ed=parseExprDeriv();
 				if(ed==null)
-					return new Access(v.getName(), ea);
+					return new Access(v, ea);
 				else
-					return expressionize(new Access(v.getName(), ea), ed);
+					return expressionize(new Access(v, ea), ed);
 			}
 
 			ExprDeriv ed=parseExprDeriv();
@@ -956,7 +956,7 @@ public class Parser {
 				}
 				from++;
 
-				return new ArrAssignment(v.getName(), i, e);
+				return new ArrAssignment(v, i, e);
 			}
 		}
 
