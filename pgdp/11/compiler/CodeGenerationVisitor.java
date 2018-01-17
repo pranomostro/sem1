@@ -1,2 +1,2 @@
-public void CodeGenerationVisitor extends Visitor {
+public class CodeGenerationVisitor extends Visitor {
 }

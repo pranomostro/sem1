@@ -305,4 +305,16 @@ public class Visitor {
 		for(Function f: p.getFunctions())
 			f.accept(this);
 	}
+
+	public void visit(Access a) {
+		MiniJava.writeConsole("visiting Access\n");
+	}
+
+	public void visit(Allocation a) {
+		MiniJava.writeConsole("visiting Allocation\n");
+	}
+
+	public void visit(ArrAssignment aa) {
+		MiniJava.writeConsole("visiting ArrAssignment\n");
+	}
 }

@@ -1,2 +1,2 @@
-public class False {
+public class False extends Condition {
 }

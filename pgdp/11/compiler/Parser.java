@@ -46,7 +46,8 @@ public class Parser {
 			   program.charAt(i)==','||program.charAt(i)=='-'||
 			   program.charAt(i)=='+'||program.charAt(i)=='/'||
 			   program.charAt(i)=='*'||program.charAt(i)==';'||
-			   program.charAt(i)=='%') {
+			   program.charAt(i)=='%'||program.charAt(i)=='['||
+			   program.charAt(i)==']') {
 				tokens.add(""+program.charAt(i));
 				i++;
 				continue;
@@ -166,13 +167,20 @@ public class Parser {
 
 	/* ✔ */
 
-	public static Object parseType() {
+	public static Type parseType() {
 		MiniJava.writeConsole("parseType called with from: " + from + "\n");
 
-		if(!program[from].matches("int|int\[\]"))
-			return null;
-		from++;
-		return new Object();
+		if(program[from].equals("int")) {
+			from++;
+			if(program[from].equals("[")) {
+				if(!program[from+1].equals("]"))
+					return null;
+				from+=2;
+				return Type.IntArr;
+			}
+			return Type.Int;
+		}
+		return null;
 	}
 
 	/* ✔ */
@@ -184,12 +192,8 @@ public class Parser {
 
 		ArrayList<Variable> vars=new ArrayList<>();
 
-		if(parseType()==null) {
-			from=save;
-			return null;
-		}
-
-		if(from>=program.length) {
+		Type t=parseType();
+		if(t==null||from>=program.length) {
 			from=save;
 			return null;
 		}
@@ -228,7 +232,7 @@ public class Parser {
 			names[i]=vars.get(i).getName();
 		}
 
-		return new Declaration(names);
+		return new Declaration(t, names);
 	}
 
 	/* ✔ */
@@ -283,6 +287,60 @@ public class Parser {
 		MiniJava.writeConsole("parseExpr called with from: " + from + "\n");
 
 		int save=from;
+
+		if(program[from].equals("(")) {
+			from++;
+			if(from>=program.length) {
+				from=save;
+				return null;
+			}
+
+			Expression e=parseExpr();
+			if(from>=program.length||e==null) {
+				from=save;
+				return null;
+			}
+
+			if(!program[from].equals(")")) {
+				from=save;
+				return null;
+			}
+
+			from++;
+
+			ExprDeriv ed=parseExprDeriv();
+
+			if(ed==null)
+				return e;
+			else
+				return expressionize(e, ed);
+		}
+
+		if(program[from].equals("new")) {
+			from++;
+
+			if(from>=program.length-2||!program[from].equals("int")||!program[from+1].equals("[")) {
+				from=save;
+				return null;
+			}
+			from+=2;
+
+			Expression e=parseExpr();
+
+			if(from>=program.length||e==null) {
+				from=save;
+				return null;
+			}
+
+			if(!program[from].equals("]")) {
+				from=save;
+				return null;
+			}
+
+			from++;
+
+			return new Allocation(e);
+		}
 
 		Number n=parseNumber();
 		if(n!=null) {
@@ -349,6 +407,26 @@ public class Parser {
 					return new Call(v.getName(), es);
 				else
 					return expressionize(new Call(v.getName(), es), ed);
+			} else if(program[from].equals("[")) {
+				from++;
+				if(from>=program.length) {
+					from=save;
+					return null;
+				}
+
+				Expression ea=parseExpr();
+
+				if(from>=program.length-1||ea==null||!program[from].equals("]")) {
+					from=save;
+					return null;
+				}
+				from++;
+
+				ExprDeriv ed=parseExprDeriv();
+				if(ed==null)
+					return new Access(v.getName(), ea);
+				else
+					return expressionize(new Access(v.getName(), ea), ed);
 			}
 
 			ExprDeriv ed=parseExprDeriv();
@@ -824,65 +902,81 @@ public class Parser {
 
 		Variable v=parseVar();
 		if(v!=null) {
-			if(from>=program.length||!program[from].equals("=")) {
-				from=save;
-				return null;
-			}
-
-			from++;
 			if(from>=program.length) {
 				from=save;
 				return null;
 			}
 
-			if(program[from].equals("read")) {
+			if(program[from].equals("=")) {
 				from++;
-				if(from>=program.length||!program[from].equals("(")) {
+				if(from>=program.length) {
 					from=save;
 					return null;
 				}
+				if(program[from].equals("read")) {
+					from++;
+					if(from>=program.length-2||!program[from].equals("(")||
+						!program[from+1].equals(")")||!program[from+2].equals(";")) {
+						from=save;
+						return null;
+					}
+					from+=3;
+					return new Read(v.getName());
+				} else {
+					Expression e=parseExpr();
+					if(from>=program.length||e==null) {
+						from=save;
+						return null;
+					}
+					if(from>=program.length||!program[from].equals(";")) {
+						from=save;
+						return null;
+					}
+					from++;
+					return new Assignment(v.getName(), e);
+				}
+			} else if(program[from].equals("[")) {
 				from++;
-				if(from>=program.length||!program[from].equals(")")) {
+				if(from>=program.length) {
 					from=save;
 					return null;
 				}
-				from++;
-				if(from>=program.length||!program[from].equals(";")) {
+				Expression i=parseExpr();
+				if(from>=program.length-2||i==null||!program[from].equals("]")||
+					!program[from+1].equals("=")) {
 					from=save;
 					return null;
 				}
-				return new Read(v.getName());
-			} else {
+				from+=2;
+
 				Expression e=parseExpr();
-				if(from>=program.length||e==null) {
-					from=save;
-					return null;
-				}
-				if(from>=program.length||!program[from].equals(";")) {
+				if(from>=program.length-1||e==null||!program[from].equals(";")) {
 					from=save;
 					return null;
 				}
 				from++;
-				return new Assignment(v.getName(), e);
+
+				return new ArrAssignment(v.getName(), i, e);
 			}
 		}
 
 		return null;
 	}
 
-	public static String[] parseParams() {
+	public static Parameters parseParams() {
 		MiniJava.writeConsole("parseParams called with from: " + from + "\n");
 
-		ArrayList<String> params=new ArrayList<>();
+		ArrayList<String> names=new ArrayList<>();
+		ArrayList<Type> types=new ArrayList<>();
 
 		if(program[from].equals(")"))
-			return new String[] {};
+			return new Parameters(new Type[] {}, new String[] {});
 
 		int save=from;
 
-		Object o=parseType();
+		Type t=parseType();
 
-		if(from>=program.length||o==null) {
+		if(from>=program.length||t==null) {
 			from=save;
 			return null;
 		}
@@ -895,7 +989,7 @@ public class Parser {
 		}
 
 		while(v!=null) {
-			params.add(v.getName());
+			names.add(v.getName());
 			if(program[from].equals(")"))
 				break;
 			if(!program[from].equals(",")) {
@@ -904,13 +998,15 @@ public class Parser {
 			}
 			from++;
 
-			o=parseType();
+			t=parseType();
 			if(from>=program.length) {
 				from=save;
 				return null;
 			}
-			if(o==null)
+			if(t==null)
 				break;
+
+			types.add(t);
 
 			v=parseVar();
 			if(from>=program.length) {
@@ -919,9 +1015,11 @@ public class Parser {
 			}
 		}
 
-		String[] ps=new String[params.size()];
-		ps=params.toArray(ps);
-		return ps;
+		String[] ps=new String[names.size()];
+		ps=names.toArray(ps);
+		Type[] ts=new Type[types.size()];
+		ts=types.toArray(ts);
+		return new Parameters(ts, ps);
 	}
 
 	/* ✔ */
@@ -931,12 +1029,12 @@ public class Parser {
 
 		ArrayList<Declaration> decls=new ArrayList<>();
 		ArrayList<Statement> stmts=new ArrayList<>();
-		String[] ps;
+		Parameters ps;
 
 		int save=from;
 
-		Object o=parseType();
-		if(from>=program.length||o==null) {
+		Type t=parseType();
+		if(from>=program.length||t==null) {
 			from=save;
 			return null;
 		}
@@ -1009,7 +1107,7 @@ public class Parser {
 		Statement[] ss=new Statement[stmts.size()];
 		ss=stmts.toArray(ss);
 
-		return new Function(v.getName(), ps, ds, ss);
+		return new Function(t, v.getName(), ps.getTypes(), ps.getNames(), ds, ss);
 	}
 
 	/* ✔ */

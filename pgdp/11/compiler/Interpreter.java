@@ -21,6 +21,7 @@ public class Interpreter extends MiniJava  {
 	public static final int HALT=16;
 	public static final int ALLOC=17;
 	public static final int DIV=18;
+	public static final int AND=19;
 	public static final int OR=20;
 	public static final int NOT=21;
 	public static final int LDH=22;
@@ -261,9 +262,9 @@ public class Interpreter extends MiniJava  {
 	}
 
 	public static int execute(int[] program) {
-		int o1, o2, narg, val;
+		int o1, o2, narg, val, addr, offset, begin, end, lastaddr;
 		boolean halt=false;
-		heap[heap.length-1]=lenght.length-2;
+		heap[heap.length-1]=heap.length-2;
 		for(int ic=0; ic<program.length&&!halt; ic++) {
 			if(ic<0)
 				error("Jumped to negative address\n");
@@ -336,7 +337,7 @@ public class Interpreter extends MiniJava  {
 				MiniJava.writeConsole(out + "\n");
 				break;
 			case CALL:
-				int addr=pop();
+				addr=pop();
 				narg=program[ic]&0xFFFF;
 				int args[]=new int[narg];
 				for(int j=0; j<narg; j++)
@@ -377,18 +378,20 @@ public class Interpreter extends MiniJava  {
 				push(~pop());
 				break;
 			case LDH:
-				int addr=pop();
-				int offset=pop();
-				push(heap[addr+offset]);
+				addr=pop();
+				begin=heap[heap.length-1-addr]>>16;
+				offset=pop();
+				push(heap[begin+offset]);
 				break;
 			case STH:
-				int addr=pop();
-				int offset=pop();
-				int val=pop();
-				heap[addr+offset]=val;
+				addr=pop();
+				begin=heap[heap.length-1-addr]>>16;
+				offset=pop();
+				val=pop();
+				heap[begin+offset]=val;
 				break;
 			case ALLOCH:
-				size=pop();
+				int size=pop();
 				if(heap[heap.length-1]==heap.length-2) {
 					begin=0;
 					end=size;
