@@ -377,8 +377,15 @@ public class Interpreter extends MiniJava  {
 				push(~pop());
 				break;
 			case LDH:
+				int addr=pop();
+				int offset=pop();
+				push(heap[addr+offset]);
 				break;
 			case STH:
+				int addr=pop();
+				int offset=pop();
+				int val=pop();
+				heap[addr+offset]=val;
 				break;
 			case ALLOCH:
 				size=pop();
