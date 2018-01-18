@@ -1,5 +1,7 @@
 public class Visitor {
-	String res;
+	private String res;
+	private int ind;
+	private final String indstr="    ";
 
 	public Visitor() {
 		res="";
@@ -11,6 +13,11 @@ public class Visitor {
 
 	public String getResult() {
 		return res;
+	}
+
+	private void indent() {
+		for(int i=0; i<ind; i++)
+			res+=indstr;
 	}
 
 	public void visit(Binary b) {
@@ -145,18 +152,120 @@ public class Visitor {
 		res+=f;
 	}
 
-	public void visit(Assignment a) {}
-	public void visit(Composite c) {}
+	public void visit(Assignment a) {
+		indent();
+		res+=a.getName() + " = ";
+		a.getExpression().accept(this);
+		res+=";\n";
+	}
+
+	public void visit(Composite c) {
+		for(Statement s: c.getStatements())
+			s.accept(this);
+	}
+
 	public void visit(Condition c) {}
-	public void visit(Declaration d) {}
+
+	public void visit(Declaration d) {
+		indent();
+		res+="int ";
+		String[] ns=d.getNames();
+		for(int i=0; i<ns.length-1; i++)
+			res+=ns[i]+", ";
+		res+=ns[ns.length-1]+";\n";
+	}
+
 	public void visit(Expression e) {}
-	public void visit(Function f) {}
-	public void visit(IfThen it) {}
-	public void visit(IfThenElse ite) {}
-	public void visit(Program p) {}
-	public void visit(Read r) {}
-	public void visit(Return r) {}
+
+	public void visit(IfThenElse ite) {
+		indent();
+		res+="if (";
+		ite.getCondition().accept(this);
+		res+=") {\n";
+		ind++;
+		ite.getThenBranch().accept(this);
+		ind--;
+		indent();
+		res+="} else {\n";
+		ind++;
+		ite.getElseBranch().accept(this);
+		ind--;
+		indent();
+		res+="}\n";
+	}
+
+	public void visit(IfThen it) {
+		indent();
+		res+="if (";
+		it.getCondition().accept(this);
+		res+=") {\n";
+		ind++;
+		it.getThenBranch().accept(this);
+		ind--;
+		indent();
+		res+="}\n";
+	}
+
+	public void visit(Program p) {
+		Function[] f=p.getFunctions();
+
+		for(int i=0; i<f.length-1; i++) {
+			f[i].accept(this);
+			res+="\n";
+		}
+		f[f.length-1].accept(this);
+	}
+
+	public void visit(Read r) {
+		indent();
+		res+=r.getName()+" = read();\n";
+	}
+
+	public void visit(Return r) {
+		indent();
+		res+="return ";
+		r.getExpression().accept(this);
+		res+=";\n";
+	}
+
 	public void visit(Statement s) {}
-	public void visit(While w) {}
-	public void visit(Write w) {}
+
+	public void visit(While w) {
+		indent();
+		res+="while (";
+		w.getCond().accept(this);
+		res+=") {\n";
+		ind++;
+		w.getBody().accept(this);
+		ind--;
+		indent();
+		res+="}\n";
+	}
+
+	public void visit(Write w) {
+		indent();
+		res+="write(";
+		w.getExpression().accept(this);
+		res+=");\n";
+	}
+
+	public void visit(Function f) {
+		res+="int ";
+		res+=f.getName();
+		res+="(";
+		String[] params=f.getParameters();
+		if(params.length!=0) {
+			for(int j=0; j<params.length-1; j++)
+				res+="int " + params[j] + ", ";
+			res+="int " + params[params.length-1];
+		}
+
+		res+=") {\n";
+		ind=1;
+		for(Declaration d: f.getDeclarations())
+			d.accept(this);
+		for(Statement s: f.getStatements())
+			s.accept(this);
+		res+="}\n";
+	}
 }
