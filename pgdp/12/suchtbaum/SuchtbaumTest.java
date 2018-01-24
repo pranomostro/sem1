@@ -2,6 +2,9 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class SuchtbaumTest {
+
+	/* TODO: add Thread tests */
+
 	private static Random random = new Random();
 
 	public static void testContains() throws InterruptedException {

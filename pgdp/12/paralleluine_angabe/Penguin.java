@@ -16,5 +16,4 @@ public class Penguin implements Runnable {
 		// TODO
 		return GUI.FRAUIN;
 	}
-
 }
