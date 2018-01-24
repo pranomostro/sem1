@@ -4,25 +4,32 @@ public class RW {
 		which is then unset in endRead()
 	*/
 
+	private boolean writeclaim=false;
 	private int readers=0;
 
 	public synchronized void startRead() throws InterruptedException {
-		while(readers<0) wait();
+		MiniJava.writeConsole("sr\n");
+		while(readers<0||writeclaim==true) wait();
 		readers++;
 	}
 
 	public synchronized void endRead() {
+		MiniJava.writeConsole("er\n");
 		readers--;
 		if(readers==0) notifyAll();
 	}
 
 	public synchronized void startWrite() throws InterruptedException {
+		MiniJava.writeConsole("sw\n");
+		writeclaim=true;
 		while(readers!=0) wait();
 		readers=-1;
 	}
 
 	public synchronized void endWrite() {
+		MiniJava.writeConsole("ew\n");
 		readers=0;
+		writeclaim=false;
 		notifyAll();
 	}
 }

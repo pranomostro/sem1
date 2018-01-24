@@ -8,6 +8,10 @@ public class Suchtbaum<T extends Comparable<T>> {
 	private SuchtbaumElement top=null;
 	private RW rw;
 
+	public Suchtbaum() {
+		rw=new RW();
+	}
+
 	public void insert(T element) throws InterruptedException {
 		rw.startWrite();
 		insertrec(element, top);
@@ -22,21 +26,31 @@ public class Suchtbaum<T extends Comparable<T>> {
 	}
 
 	public void remove(T element) throws InterruptedException {
-		rw.startWrite();
 		SuchtbaumElement se=find(element);
 		if(se==null)
 			return;
 		SuchtbaumElement pt=find_parent(element);
-		rearrage(se, pt);
 		rw.startWrite();
+		rearrange(se, pt);
+		rw.endWrite();
 	}
 
 	public String toString() {
-		rw.startRead();
-		String res="digraph G {\n";
-		res+=toString_rec(top);
-		res+="}\n";
-		rw.endRead();
+		return tswrap();
+	}
+
+	private String tswrap() {
+		String res;
+		try {
+			rw.startRead();
+			res="digraph G {\n";
+			res+=toString_rec(top);
+			res+="}\n";
+			rw.endRead();
+		} catch(InterruptedException ie) {
+			res="";
+		}
+
 		return res;
 	}
 
@@ -112,7 +126,7 @@ public class Suchtbaum<T extends Comparable<T>> {
 
 	/* if pt==null, then se is the top */
 
-	private void rearrage(SuchtbaumElement se, SuchtbaumElement pt) {
+	private void rearrange(SuchtbaumElement se, SuchtbaumElement pt) {
 		if(se.left==null&&se.right==null) {
 			if(pt==null) {
 				top=null;
