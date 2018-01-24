@@ -1,4 +1,9 @@
 public class RW {
+	/* TODO: add a flag that is set after startWrite() is called,
+		causing all startRead()'s to wait until it is unset,
+		which is then unset in endRead()
+	*/
+
 	private int readers=0;
 
 	public synchronized void startRead() throws InterruptedException {

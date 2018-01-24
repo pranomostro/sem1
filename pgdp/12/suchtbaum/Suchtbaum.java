@@ -3,16 +3,56 @@ public class Suchtbaum<T extends Comparable<T>> {
 		private T element;
 		private SuchtbaumElement left = null;
 		private SuchtbaumElement right = null;
-		
-		/*
-		 * Todo
-		 */
 	}
 
 	private SuchtbaumElement top=null;
+	private RW rw;
 
 	public void insert(T element) throws InterruptedException {
+		rw.startWrite();
 		insertrec(element, top);
+		rw.endWrite();
+	}
+
+	public boolean contains(T element) throws InterruptedException {
+		rw.startRead();
+		boolean b=containsrec(element, top);
+		rw.endRead();
+		return b;
+	}
+
+	public void remove(T element) throws InterruptedException {
+		rw.startWrite();
+		SuchtbaumElement se=find(element);
+		if(se==null)
+			return;
+		SuchtbaumElement pt=find_parent(element);
+		rearrage(se, pt);
+		rw.startWrite();
+	}
+
+	public String toString() {
+		rw.startRead();
+		String res="digraph G {\n";
+		res+=toString_rec(top);
+		res+="}\n";
+		rw.endRead();
+		return res;
+	}
+
+	private SuchtbaumElement find(T element) {
+		return findrec(element, top);
+	}
+
+	private SuchtbaumElement findrec(T element, SuchtbaumElement from) {
+		if(from==null)
+			return null;
+		if(element.compareTo(from.element)==0)
+			return from;
+		else if(element.compareTo(from.element)>0)
+			return findrec(element, from.right);
+		else
+			return findrec(element, from.left);
 	}
 
 	private void insertrec(T element, SuchtbaumElement from) {
@@ -43,10 +83,6 @@ public class Suchtbaum<T extends Comparable<T>> {
 		}
 	}
 
-	public boolean contains(T element) throws InterruptedException {
-		return containsrec(element, top);
-	}
-
 	private boolean containsrec(T element, SuchtbaumElement from) {
 		if(from==null)
 			return false;
@@ -58,26 +94,11 @@ public class Suchtbaum<T extends Comparable<T>> {
 			return containsrec(element, from.left);
 	}
 
-	public SuchtbaumElement find(T element) {
-		return findrec(element, top);
-	}
-
-	public SuchtbaumElement findrec(T element, SuchtbaumElement from) {
-		if(from==null)
-			return null;
-		if(element.compareTo(from.element)==0)
-			return from;
-		else if(element.compareTo(from.element)>0)
-			return findrec(element, from.right);
-		else
-			return findrec(element, from.left);
-	}
-
-	public SuchtbaumElement find_parent(T element) {
+	private SuchtbaumElement find_parent(T element) {
 		return find_parent_rec(element, top);
 	}
 
-	public SuchtbaumElement find_parent_rec(T element, SuchtbaumElement from) {
+	private SuchtbaumElement find_parent_rec(T element, SuchtbaumElement from) {
 		if(from==null)
 			return null;
 		if(from.left!=null&&element.compareTo(from.left.element)==0||
@@ -89,17 +110,9 @@ public class Suchtbaum<T extends Comparable<T>> {
 			return find_parent_rec(element, from.left);
 	}
 
-	public void remove(T element) throws InterruptedException {
-		SuchtbaumElement se=find(element);
-		if(se==null)
-			return;
-		SuchtbaumElement pt=find_parent(element);
-		pullup(se, pt);
-	}
-
 	/* if pt==null, then se is the top */
 
-	public void pullup(SuchtbaumElement se, SuchtbaumElement pt) {
+	private void rearrage(SuchtbaumElement se, SuchtbaumElement pt) {
 		if(se.left==null&&se.right==null) {
 			if(pt==null) {
 				top=null;
@@ -129,15 +142,7 @@ public class Suchtbaum<T extends Comparable<T>> {
 		}
 	}
 
-	@Override
-	public String toString() {
-		String res="digraph G {\n";
-		res+=toString_rec(top);
-		res+="}\n";
-		return res;
-	}
-
-	public String toString_rec(SuchtbaumElement se) {
+	private String toString_rec(SuchtbaumElement se) {
 		if(se==null)
 			return "";
 		String res="\t" + se.element + ";\n";
