@@ -5,8 +5,6 @@ public class SuchtbaumTest implements Runnable {
 	private static int tn=0;
 	private static Suchtbaum<Integer> s;
 
-	/* TODO: add Thread tests */
-
 	public void run() {
 		int n=20000, t, v;
 		boolean res;
