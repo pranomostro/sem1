@@ -28,13 +28,13 @@ public class Main {
 
 		for(int i=0; i<Helper.NTUTORS; i++) {
 			if(i%(Helper.NTASKS)==0) {
-				MiniJava.writeConsole("Using the first buffer, writing to " + i%(Helper.NTASKS) + "\n");
+				//MiniJava.writeConsole("Using the first buffer, writing to " + i%(Helper.NTASKS) + "\n");
 				tutors[i]=new Tutor(i%(Helper.NTASKS), begin, mid[i%(Helper.NTASKS)]);
 			} else if(i%(Helper.NTASKS)==Helper.NTASKS-1) {
-				MiniJava.writeConsole("Using the last buffer, reading from " + (i%(Helper.NTASKS)-1) + "\n");
+				//MiniJava.writeConsole("Using the last buffer, reading from " + (i%(Helper.NTASKS)-1) + "\n");
 				tutors[i]=new Tutor(i%(Helper.NTASKS), mid[i%(Helper.NTASKS)-1], end);
 			} else {
-				MiniJava.writeConsole("Adding tutor consuming task " + (i%(Helper.NTASKS)-1) + "\n");
+				//MiniJava.writeConsole("Adding tutor consuming task " + (i%(Helper.NTASKS)-1) + "\n");
 				tutors[i]=new Tutor(i%(Helper.NTASKS), mid[i%(Helper.NTASKS)-1], mid[i%(Helper.NTASKS)]);
 			}
 		}
@@ -43,7 +43,7 @@ public class Main {
 			tutors[i].start();
 
 		for(int i=0; i<Helper.NEXAMS; i++) {
-			try { MiniJava.writeConsole(end.consume().toString() + "\n"); }
+			try { MiniJava.writeConsole(i + ": " + end.consume().toString() + "\n"); }
 			catch(InterruptedException ie) { System.exit(3); }
 		}
 	}

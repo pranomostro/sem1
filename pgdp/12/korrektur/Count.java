@@ -7,7 +7,6 @@ public class Count {
 
 	public synchronized void inc(int i) {
 		count[i]++;
-		MiniJava.writeConsole("incremented task " + i + " to " + count[i] + "\n");
 	}
 
 	public int getn(int i) {

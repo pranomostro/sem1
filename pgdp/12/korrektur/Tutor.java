@@ -17,6 +17,8 @@ public class Tutor extends Thread {
 		while(count.getn(task)<Helper.NEXAMS) {
 			try {
 				count.inc(task);
+				if(count.getn(task)>Helper.NEXAMS)
+					break;
 				Klausur k=in.consume();
 				int bp=k.getGesamtpunktzahl();
 				int np=Korrekturschema.punkte(task, k.getAntwort(task));

@@ -8,7 +8,6 @@ public class Buffer {
 		a=new Klausur[n];
 		free=new Sema(n);
 		occupied=new Sema(0);
-		MiniJava.writeConsole("creating new buffer with capacity " + n + "\n");
 	}
 
 	public void produce(Klausur k) throws InterruptedException {
@@ -17,7 +16,6 @@ public class Buffer {
 			a[last]=k;
 			last=(last+1)%cap;
 		}
-		MiniJava.writeConsole("added value to the buffer\n");
 		occupied.up();
 	}
 
@@ -28,7 +26,6 @@ public class Buffer {
 			result=a[first];
 			first=(first+1)%cap;
 		}
-		MiniJava.writeConsole("removed value from the buffer\n");
 		free.up();
 		return result;
 	}
