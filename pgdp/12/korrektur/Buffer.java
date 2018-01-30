@@ -8,6 +8,7 @@ public class Buffer {
 		a=new Klausur[n];
 		free=new Sema(n);
 		occupied=new Sema(0);
+		MiniJava.writeConsole("creating new buffer with capacity " + n + "\n");
 	}
 
 	public void produce(Klausur k) throws InterruptedException {
