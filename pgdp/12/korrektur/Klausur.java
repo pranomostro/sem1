@@ -84,6 +84,6 @@ public class Klausur {
 	@Override
 	public String toString() {
 		return nachname + ", " + vorname + " hat " + gesamtpunktzahl + 
-				" von 40 möglichen Punkten und eine " + note + "geschrieben.";
+				" von 40 möglichen Punkten und eine " + note + " geschrieben.";
 	}
 }

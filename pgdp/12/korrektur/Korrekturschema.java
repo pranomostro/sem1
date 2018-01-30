@@ -1,5 +1,3 @@
-package korrektur;
-
 public class Korrekturschema {
   public static int punkte(int aufgabe, String antwort) {
     switch (aufgabe) {
