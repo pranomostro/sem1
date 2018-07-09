@@ -4,9 +4,10 @@ public class GrausGauß extends MiniJava {
 
 	public static void main(String[] args) {
 		int i;
-		int[] matrix, results;
+		int results;
 
-		matrix=readMatrix();
+		//matrix=readMatrix();
+		int[] matrix={3, 1, 8, 6, 6, 1, 0, 2, 3, 3, 0, 0, 1, 2, 3, 0, 0, 1, 5, 5, 0, 0, 0, 7, 7};
 
 		results=solveSystem(matrix);
 
